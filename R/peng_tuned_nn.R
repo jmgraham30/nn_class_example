@@ -24,15 +24,16 @@ peng_recipe <- recipe(island ~ ., data = peng_train) %>%
 
 # A Tuned MLP
 
-nn_spec <- mlp(hidden_units = 10,
+nn_spec <- mlp(hidden_units = tune(),
                epochs = 150L,
                learn_rate = tune()) %>%
   set_engine("brulee") %>%
   set_mode("classification")
 
 
-nn_grid <- grid_regular(learn_rate(), 
-                        levels = 4)
+nn_grid <- grid_regular(hidden_units(),
+                        learn_rate(), 
+                        levels = 5)
 
 nn_rs <- workflow() %>%
   add_recipe(peng_recipe) %>%
