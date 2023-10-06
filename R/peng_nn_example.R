@@ -2,8 +2,6 @@ library(tidyverse)
 library(tidymodels)
 library(brulee)
 library(ggthemes)
-library(tidypredict)
-library(yaml)
 
 tidymodels_prefer()
 theme_set(theme_minimal(base_size = 12))
