@@ -17,7 +17,7 @@ peng_split <- initial_split(penguins, strata = island)
 peng_train <- training(peng_split)
 peng_test <- testing(peng_split)
 
-peng_folds <- vfold_cv(peng_train, strata = island, v = 5)
+peng_folds <- vfold_cv(peng_train, strata = island, v = 10)
 
 peng_recipe <- recipe(island ~ ., data = peng_train) %>%
   step_normalize(all_numeric_predictors()) 
@@ -25,7 +25,7 @@ peng_recipe <- recipe(island ~ ., data = peng_train) %>%
 # A Tuned MLP
 
 nn_spec <- mlp(hidden_units = tune(),
-               epochs = 150L,
+               epochs = 150,
                learn_rate = tune()) %>%
   set_engine("brulee") %>%
   set_mode("classification")
@@ -33,7 +33,7 @@ nn_spec <- mlp(hidden_units = tune(),
 
 nn_grid <- grid_regular(hidden_units(),
                         learn_rate(), 
-                        levels = 5)
+                        levels = 8)
 
 nn_rs <- workflow() %>%
   add_recipe(peng_recipe) %>%
@@ -43,8 +43,15 @@ nn_rs <- workflow() %>%
             metrics = metric_set(accuracy,roc_auc)
   )
 
-final_nn <- finalize_model(nn_spec, select_best(nn_rs, "roc_auc"))
+p_res <- nn_rs %>%
+  unnest(.metrics) %>%
+  filter(.metric == "roc_auc") %>%
+  group_by(hidden_units,learn_rate) %>%
+  summarise(mean=mean(.estimate)) %>%
+  ggplot(aes(x=learn_rate,y=mean,color=factor(hidden_units))) + 
+  geom_point() + 
+  geom_line() + 
+  scale_x_log10() + 
+  labs(x="Learning rate",y="ROC AUC",color="Hidden \n units")
 
-final_nn_fit <- fit(final_nn, island ~ ., peng_train)
-
-write_rds(final_nn_fit,"./models/tuned_peng_nn.rds")
+ggsave("plots/nn_tune_res.png")
