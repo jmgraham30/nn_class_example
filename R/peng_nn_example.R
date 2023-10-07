@@ -33,7 +33,7 @@ peng_recipe <- recipe(island ~ ., data = peng_train) %>%
 
 ## A Single MLP
 
-nn_spec <- mlp(hidden_units = 10, epochs = 150L) %>%
+nn_spec <- mlp(hidden_units = 20, epochs = 300, learn_rate = 0.05) %>%
   set_engine("brulee") %>%
   set_mode("classification")
 
@@ -41,11 +41,11 @@ peng_wf <- workflow() %>%
   add_recipe(peng_recipe) %>%
   add_model(nn_spec)
 
-peng_nn_fit <- fit(peng_wf,peng_train)
+#peng_nn_fit <- fit(peng_wf,peng_train)
 
 #write_rds(peng_nn_fit,"./models/fitted_peng_nn.rds")
 
-#peng_nn_fit <- read_rds("./models/fitted_peng_nn.rds")
+peng_nn_fit <- read_rds("models/fitted_peng_nn.rds")
 
 predict(peng_nn_fit, peng_test, type = "class") %>% 
   bind_cols(peng_test) %>% 
@@ -65,56 +65,17 @@ predict(peng_nn_fit, peng_test, type = "prob") %>%
   scale_x_reverse()
 
 
-# A Tuned MLP
+predict(peng_nn_fit, peng_test, type = "class") %>% 
+  bind_cols(peng_test) %>%
+  mutate(correct = case_when(
+    island == .pred_class ~ "Correct",
+    TRUE ~ "Incorrect"
+  )) %>%
+  ggplot(aes(x=flipper_length_mm,y=bill_depth_mm,color=correct)) + 
+  geom_point() + 
+  scale_color_colorblind() + 
+  labs(title = "NN Classification")
 
-#nn_spec <- mlp(hidden_units = 10,
-#               epochs = 150L,
-#               learn_rate = tune()) %>%
-#  set_engine("brulee") %>%
-#  set_mode("classification")
-
-
-#nn_grid <- grid_regular(learn_rate(), 
-#                          levels = 4)
-
-#nn_rs <- workflow() %>%
-#  add_recipe(peng_recipe) %>%
-#  add_model(nn_spec) %>%
-#  tune_grid(resamples = peng_folds,
-#            grid = nn_grid,
-#            metrics = metric_set(accuracy,roc_auc)
-#  )
-
-#autoplot(nn_rs)
-
-#final_nn <- finalize_model(nn_spec, select_best(nn_rs, "roc_auc"))
-
-#final_nn_fit <- fit(final_nn, island ~ ., peng_train)
-
-
-################peng_nn_fit_tuned <- read_rds("./models/tuned_peng_nn.rds")
-
-peng_nn_pred <- peng_nn_fit_tuned %>%
-  predict(peng_test,type = "class") 
-
-
-peng_nn_pred %>%
-  bind_cols(peng_test %>% select(island)) %>%
-  conf_mat(island,.pred_class)
-
-peng_test %>%
-  bind_cols(predict(peng_nn_fit_tuned, peng_test,type="prob")) %>%
-  roc_auc(island,.pred_Biscoe:.pred_Torgersen) 
-
-
-peng_test %>%
-  bind_cols(predict(peng_nn_fit_tuned, peng_test,type="prob")) %>%
-  roc_curve(island,.pred_Biscoe:.pred_Torgersen) %>%
-  ggplot(aes(x=specificity,y=sensitivity,color=.level)) + 
-  geom_path(linewidth=1) + 
-  scale_x_reverse() + 
-  scale_color_colorblind() +
-  labs(color = "Island")
 
 
 ######### Tuned Decision Tree for Comparison
@@ -168,3 +129,13 @@ peng_test %>%
   labs(color = "Island")
 
 
+peng_tree_pred %>% 
+  bind_cols(peng_test) %>%
+  mutate(correct = case_when(
+    island == .pred_class ~ "Correct",
+    TRUE ~ "Incorrect"
+  )) %>%
+  ggplot(aes(x=flipper_length_mm,y=bill_depth_mm,color=correct)) + 
+  geom_point() + 
+  scale_color_colorblind() + 
+  labs(title = "DT Classification")
