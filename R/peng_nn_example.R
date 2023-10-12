@@ -5,6 +5,8 @@ library(ggthemes)
 
 tidymodels_prefer()
 theme_set(theme_minimal(base_size = 12))
+
+set.seed(1234)
 doParallel::registerDoParallel()
 
 penguins <- penguins %>%
@@ -26,26 +28,21 @@ peng_split <- initial_split(penguins, strata = island)
 peng_train <- training(peng_split)
 peng_test <- testing(peng_split)
 
-peng_folds <- vfold_cv(peng_train, strata = island, v = 5)
-
 peng_recipe <- recipe(island ~ ., data = peng_train) %>%
   step_normalize(all_numeric_predictors()) 
 
 ## A Single MLP
 
-nn_spec <- mlp(hidden_units = 20, epochs = 300, learn_rate = 0.05) %>%
-  set_engine("brulee") %>%
-  set_mode("classification")
-
-peng_wf <- workflow() %>%
-  add_recipe(peng_recipe) %>%
-  add_model(nn_spec)
-
-#peng_nn_fit <- fit(peng_wf,peng_train)
+#peng_nn_fit <- brulee_mlp(peng_recipe,data = peng_train,
+#                          hidden_units = 20,
+#                          epochs = 300,
+#                          learn_rate = 0.05)
 
 #write_rds(peng_nn_fit,"./models/fitted_peng_nn.rds")
 
 peng_nn_fit <- read_rds("models/fitted_peng_nn.rds")
+
+autoplot(peng_nn_fit)
 
 predict(peng_nn_fit, peng_test, type = "class") %>% 
   bind_cols(peng_test) %>% 
@@ -76,9 +73,21 @@ predict(peng_nn_fit, peng_test, type = "class") %>%
   scale_color_colorblind() + 
   labs(title = "NN Classification")
 
+#### Can also use a workflow
 
+nn_spec <- mlp(hidden_units = 20, epochs = 300, learn_rate = 0.05) %>%
+  set_engine("brulee") %>%
+  set_mode("classification")
+
+peng_wf <- workflow() %>%
+  add_recipe(peng_recipe) %>%
+  add_model(nn_spec)
+
+#peng_nn_fit <- fit(peng_wf,peng_train)
 
 ######### Tuned Decision Tree for Comparison
+
+peng_folds <- vfold_cv(peng_train, strata = island, v = 10)
 
 tree_spec <- decision_tree(
   cost_complexity = tune(),
@@ -92,19 +101,22 @@ tree_grid <- grid_regular(cost_complexity(),
                           min_n(), 
                           levels = 4)
 
-tree_rs <- workflow() %>%
-  add_recipe(peng_recipe) %>%
-  add_model(tree_spec) %>%
-  tune_grid(resamples = peng_folds,
-            grid = tree_grid,
-            metrics = metric_set(accuracy,roc_auc)
-  )
+#tree_rs <- workflow() %>%
+#  add_recipe(peng_recipe) %>%
+#  add_model(tree_spec) %>%
+#  tune_grid(resamples = peng_folds,
+#            grid = tree_grid,
+#            metrics = metric_set(accuracy,roc_auc)
+#  )
 
 
-final_tree <- finalize_model(tree_spec, select_best(tree_rs, "roc_auc"))
+#final_tree <- finalize_model(tree_spec, select_best(tree_rs, "roc_auc"))
 
-final_tree_fit <- fit(final_tree, island ~ ., peng_train)
+#final_tree_fit <- fit(final_tree, island ~ ., peng_train)
 
+#write_rds(final_tree_fit,"./models/fitted_peng_tree.rds")
+
+final_tree_fit <- read_rds("./models/fitted_peng_tree.rds")
 
 peng_tree_pred <- final_tree_fit %>%
   predict(peng_test,type = "class") 
