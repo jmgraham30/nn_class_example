@@ -68,7 +68,7 @@ predict(peng_nn_fit, peng_test, type = "class") %>%
     island == .pred_class ~ "Correct",
     TRUE ~ "Incorrect"
   )) %>%
-  ggplot(aes(x=flipper_length_mm,y=bill_depth_mm,color=correct)) + 
+  ggplot(aes(x=bill_depth_mm,y=flipper_length_mm,color=correct)) + 
   geom_point() + 
   scale_color_colorblind() + 
   labs(title = "NN Classification")
@@ -147,7 +147,7 @@ peng_tree_pred %>%
     island == .pred_class ~ "Correct",
     TRUE ~ "Incorrect"
   )) %>%
-  ggplot(aes(x=flipper_length_mm,y=bill_depth_mm,color=correct)) + 
+  ggplot(aes(x=bill_depth_mm,y=flipper_length_mm,color=correct)) + 
   geom_point() + 
   scale_color_colorblind() + 
   labs(title = "DT Classification")
