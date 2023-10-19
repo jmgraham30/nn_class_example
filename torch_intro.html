@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.450">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="JMG">
+
+<title>Intro to torch</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="torch_intro_files/libs/clipboard/clipboard.min.js"></script>
+<script src="torch_intro_files/libs/quarto-html/quarto.js"></script>
+<script src="torch_intro_files/libs/quarto-html/popper.min.js"></script>
+<script src="torch_intro_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="torch_intro_files/libs/quarto-html/anchor.min.js"></script>
+<link href="torch_intro_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="torch_intro_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="torch_intro_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="torch_intro_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="torch_intro_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Intro to torch</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>JMG </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<section id="overview" class="level2">
+<h2 class="anchored" data-anchor-id="overview">Overview</h2>
+<section id="in-torch-world" class="level3">
+<h3 class="anchored" data-anchor-id="in-torch-world">In <code>torch</code> world</h3>
+<p><code>torch</code> is an R port of <a href="https://pytorch.org/">PyTorch</a>, one of the two most-employed deep learning frameworks in industry and research. The other is <a href="https://www.tensorflow.org/">TensorFlow</a>. The <code>torch</code> package is written entirely in R and C++ (including a bit of C). No Python installation is required to use it. Part of the goal of <code>torch</code> and similar libraries or packages is to implement fast and efficient numerical computations and to facilitate GPU computing.</p>
+<p>On the Python (PyTorch) side, the ecosystem appears as a set of concentric circles. In the middle, there’s PyTorch itself, the core library without which nothing could work. Surrounding it, we have the inner circle of what could be called framework libraries, dedicated to special types of data (images, sound, text …), or centered on workflow tasks, like deployment. Then, there is the broader ecosystem of add-ons, specializations, and libraries for whom PyTorch is a building block, or a tool. On the R side, we have the same “heart” – all depends on core <code>torch</code> – and we do have the same types of libraries; but the categories, the “circles”, appear less clearly set off from each other.</p>
+<p>There are also three other related packages: <code>torchvision</code> , <code>torchaudio</code>, and <code>luz</code>. The former two bundle domain-specific transformations, deep learning models, datasets, and utilities for images (incl.&nbsp;video) and audio data, respectively. The third is a high-level, intuitive, nice-to-use interface to <code>torch</code>, allowing to define, train, and evaluate a neural network in just a few lines of code. Like <code>torch</code> itself, all three packages can be installed from CRAN.</p>
+</section>
+<section id="installing-and-running-torch" class="level3">
+<h3 class="anchored" data-anchor-id="installing-and-running-torch">Installing and running torch</h3>
+<p><code>torch</code> is available for Windows, MacOS, and Linux. If you have a compatible GPU, and the necessary NVidia software installed, you can benefit from significant speedup, a speedup that will depend on the type of model trained. At any time, you’ll find up-to-date information in the [vignette](https://cran.r-project.org/web/packages/torch/vignettes/installation.html.</p>
+</section>
+</section>
+<section id="tensors" class="level2">
+<h2 class="anchored" data-anchor-id="tensors">Tensors</h2>
+<p>To do anything useful with <code>torch</code>, you need to know about tensors. Basically, a tensor is a container for data that can be of arbitrary dimension and that is optimized for fast computation on a GPU. In <code>torch</code>, tensors are the basic building blocks of neural networks.</p>
+<p>Let’s load torch and create a tensor.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(torch)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>t1 <span class="ot">&lt;-</span> <span class="fu">torch_tensor</span>(<span class="fu">c</span>(<span class="fl">0.1</span>,<span class="fl">1.2</span>,<span class="fl">6.5</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Now, <code>t1</code> has some attributes that we can inspect.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>(<span class="fu">class</span>(t1))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "torch_tensor" "R7"          </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>(t1<span class="sc">$</span>dtype)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>torch_Float</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>(t1<span class="sc">$</span>device)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>torch_device(type='cpu')</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>(t1<span class="sc">$</span>shape)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 3</code></pre>
+</div>
+</div>
+<p>We can reshape our tensor.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>t2 <span class="ot">&lt;-</span> <span class="fu">torch_reshape</span>(t1, <span class="fu">c</span>(<span class="dv">3</span>,<span class="dv">1</span>))</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>t3 <span class="ot">&lt;-</span> <span class="fu">torch_reshape</span>(t1, <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">3</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>t2<span class="sc">$</span>shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 3 1</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>t3<span class="sc">$</span>shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 1 3</code></pre>
+</div>
+</div>
+<p>We won’t go through the details here but there are a number of ways to create tensors of various sizes and data types. One thing we are specifically interested in though is how to get tensors from data sets in R. The trickiest part is handling data that is not numerical. We first have to covert everything to numerical there are no tensors in <code>torch</code> that store strings, then we need to construct an R matrix before we can convert it to a tensor.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>penguins_tt <span class="ot">&lt;-</span> penguins <span class="sc">%&gt;%</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">recipe</span>(species <span class="sc">~</span> .) <span class="sc">%&gt;%</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_naomit</span>(<span class="fu">everything</span>()) <span class="sc">%&gt;%</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_normalize</span>(<span class="fu">all_numeric</span>()) <span class="sc">%&gt;%</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_dummy</span>(<span class="fu">all_factor</span>()) <span class="sc">%&gt;%</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">prep</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">juice</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.matrix</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">torch_tensor</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>penguins_tt</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>torch_tensor
+-0.8947  0.7796 -1.4246 -0.5676  0.0000  1.0000  1.0000  0.0000  0.0000
+-0.8216  0.1194 -1.0679 -0.5055  0.0000  1.0000  0.0000  0.0000  0.0000
+-0.6753  0.4241 -0.4257 -1.1886  0.0000  1.0000  0.0000  0.0000  0.0000
+-1.3336  1.0842 -0.5684 -0.9402  0.0000  1.0000  0.0000  0.0000  0.0000
+-0.8581  1.7444 -0.7825 -0.6918  0.0000  1.0000  1.0000  0.0000  0.0000
+-0.9313  0.3225 -1.4246 -0.7229  0.0000  1.0000  0.0000  0.0000  0.0000
+-0.8764  1.2366 -0.4257  0.5811  0.0000  1.0000  1.0000  0.0000  0.0000
+-0.5290  0.2210 -1.3533 -1.2507  0.0000  1.0000  0.0000  0.0000  0.0000
+-0.9861  2.0491 -0.7111 -0.5055  0.0000  1.0000  1.0000  0.0000  0.0000
+-1.7176  1.9983 -0.2117  0.2396  0.0000  1.0000  1.0000  0.0000  0.0000
+-1.3518  0.3225 -1.1392 -0.6297  0.0000  1.0000  0.0000  0.0000  0.0000
+-0.9678  0.9319 -0.4257 -0.9402  0.0000  1.0000  0.0000  0.0000  0.0000
+-0.2730  1.7952 -0.2830  0.3638  0.0000  1.0000  1.0000  0.0000  0.0000
+-1.7541  0.6272 -1.2106 -1.0954  0.0000  1.0000  0.0000  0.0000  0.0000
+ 0.3670  2.2014 -0.4971 -0.0088  0.0000  1.0000  1.0000  0.0000  0.0000
+-1.1324  0.5764 -1.9240 -1.0023  0.0000  0.0000  0.0000  0.0000  0.0000
+-1.1507  0.7796 -1.4960 -0.7539  0.0000  0.0000  1.0000  0.0000  0.0000
+-1.4798  1.0335 -0.8538 -0.5055  0.0000  0.0000  0.0000  0.0000  0.0000
+-1.0593  0.4749 -1.1392 -0.3192  0.0000  0.0000  1.0000  0.0000  0.0000
+-0.9496  0.0178 -1.4960 -0.5055  0.0000  0.0000  1.0000  0.0000  0.0000
+-1.5896  0.8811 -0.9965 -0.5055  0.0000  0.0000  0.0000  0.0000  0.0000
+-0.6204  0.7288 -1.2819 -0.8160  0.0000  0.0000  1.0000  0.0000  0.0000
+-0.6387  0.3733 -0.9965 -1.2507  0.0000  0.0000  0.0000  0.0000  0.0000
+-1.1141  0.7288 -2.0667 -1.3128  0.0000  0.0000  0.0000  0.0000  0.0000
+-0.6387  0.8811 -1.4960 -0.3192  0.0000  0.0000  1.0000  0.0000  0.0000
+-0.8216 -0.2361 -1.6387 -1.1886  1.0000  0.0000  0.0000  0.0000  0.0000
+-1.2421  0.4749 -1.6387 -0.3813  1.0000  0.0000  1.0000  0.0000  0.0000
+-0.8216  0.3225 -0.9252 -1.1265  1.0000  0.0000  0.0000  0.0000  0.0000
+-0.5655  0.8811 -1.2106 -0.3813  1.0000  0.0000  1.0000  0.0000  0.0000
+-1.3884 -0.0837 -0.4257 -1.0954  1.0000  0.0000  0.0000  0.0000  0.0000
+... [the output was truncated (use n=-1 to disable)]
+[ CPUFloatType{333,9} ]</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>(penguins_tt<span class="sc">$</span>shape)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 333   9</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>(penguins_tt<span class="sc">$</span>device)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>torch_device(type='cpu')</code></pre>
+</div>
+</div>
+<section id="operations-on-tensors" class="level3">
+<h3 class="anchored" data-anchor-id="operations-on-tensors">Operations on Tensors</h3>
+<p>We can perform all the usual mathematical operations on tensors: add, subtract, divide … These operations are available as functions (starting with <code>torch_</code>) as well as as methods on objects (invoked with <code>$</code>-syntax). For example, the following are equivalent:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>t1 <span class="ot">&lt;-</span> <span class="fu">torch_tensor</span>(<span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>))</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>t2 <span class="ot">&lt;-</span> <span class="fu">torch_tensor</span>(<span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">4</span>))</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a><span class="fu">torch_add</span>(t1, t2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>torch_tensor
+ 4
+ 6
+[ CPUFloatType{2} ]</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># equivalently</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>t1<span class="sc">$</span><span class="fu">add</span>(t2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>torch_tensor
+ 4
+ 6
+[ CPUFloatType{2} ]</code></pre>
+</div>
+</div>
+<p>In both cases, a new object is created; neither <code>t1</code> nor <code>t2</code> are modified. There exists an alternate method that modifies its object in-place:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>t1<span class="sc">$</span><span class="fu">add_</span>(t2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>torch_tensor
+ 4
+ 6
+[ CPUFloatType{2} ]</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>t1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>torch_tensor
+ 4
+ 6
+[ CPUFloatType{2} ]</code></pre>
+</div>
+</div>
+<p>In fact, the same pattern applies for other operations: Whenever you see an underscore appended, the object is modified in-place.</p>
+<p>Naturally, in a scientific-computing setting, matrix operations are of special interest. Let’s start with the dot product of two one-dimensional structures, i.e., vectors.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>t1 <span class="ot">&lt;-</span> <span class="fu">torch_tensor</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>)</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>t2 <span class="ot">&lt;-</span> <span class="fu">torch_tensor</span>(<span class="dv">4</span><span class="sc">:</span><span class="dv">6</span>)</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>t1<span class="sc">$</span><span class="fu">dot</span>(t2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>torch_tensor
+32
+[ CPULongType{} ]</code></pre>
+</div>
+</div>
+<p>Were you thinking this shouldn’t work? Should we have needed to transpose (<code>torch_t()</code>) one of the tensors? In fact, this also works:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>t1<span class="sc">$</span><span class="fu">t</span>()<span class="sc">$</span><span class="fu">dot</span>(t2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>torch_tensor
+32
+[ CPULongType{} ]</code></pre>
+</div>
+</div>
+<p>The reason the first call worked, too, is that <code>torch</code> does not distinguish between row vectors and column vectors. In consequence, if we multiply a vector with a matrix, using <code>torch_matmul()</code>, we don’t need to worry about the vector’s orientation either:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>t3 <span class="ot">&lt;-</span> <span class="fu">torch_tensor</span>(<span class="fu">matrix</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">12</span>, <span class="at">ncol =</span> <span class="dv">3</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>t3<span class="sc">$</span><span class="fu">matmul</span>(t1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>torch_tensor
+ 14
+ 32
+ 50
+ 68
+[ CPULongType{4} ]</code></pre>
+</div>
+</div>
+<p>The same function, <code>torch_matmul()</code>, would be used to multiply two matrices. Note how this is different from what <code>torch_multiply()</code> does, namely, scalar-multiply its arguments:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="fu">torch_multiply</span>(t1, t2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>torch_tensor
+  4
+ 10
+ 18
+[ CPULongType{3} ]</code></pre>
+</div>
+</div>
+<p>Many more tensor operations exist, some of which we will need to build neural networks. But there is one group that deserves special mention.</p>
+</section>
+<section id="summary-operations" class="level3">
+<h3 class="anchored" data-anchor-id="summary-operations">Summary operations</h3>
+<p>If you have an R matrix and are about to compute a sum, this could, normally, mean one of three things: the global sum, row sums, or column sums. Let’s see all three of them at work (using <code>apply()</code> for a reason):</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>(m <span class="ot">&lt;-</span> <span class="fu">outer</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">6</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1    2    3    4    5    6
+[2,]    2    4    6    8   10   12
+[3,]    3    6    9   12   15   18</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(m)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 126</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="fu">apply</span>(m, <span class="dv">1</span>, sum)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 21 42 63</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="fu">apply</span>(m, <span class="dv">2</span>, sum)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1]  6 12 18 24 30 36</code></pre>
+</div>
+</div>
+<p>And now, the <code>torch</code> equivalents. We start with the overall sum.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>t <span class="ot">&lt;-</span> <span class="fu">torch_outer</span>(<span class="fu">torch_tensor</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>), <span class="fu">torch_tensor</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">6</span>))</span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>t<span class="sc">$</span><span class="fu">sum</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>torch_tensor
+126
+[ CPULongType{} ]</code></pre>
+</div>
+</div>
+<p>It gets more interesting for the row and column sums. The <code>dim</code> argument tells <code>torch</code> which dimension(s) to sum over. Passing in <code>dim = 1</code>, we see:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>t<span class="sc">$</span><span class="fu">sum</span>(<span class="at">dim =</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>torch_tensor
+  6
+ 12
+ 18
+ 24
+ 30
+ 36
+[ CPULongType{6} ]</code></pre>
+</div>
+</div>
+<p>Unexpectedly, these are the column sums! Before drawing conclusions, let’s check what happens with <code>dim = 2</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>t<span class="sc">$</span><span class="fu">sum</span>(<span class="at">dim =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>torch_tensor
+ 21
+ 42
+ 63
+[ CPULongType{3} ]</code></pre>
+</div>
+</div>
+<p>Now, we have sums over rows. Did we misunderstand something about how <code>torch</code> orders dimensions? No, it’s not that. In <code>torch</code>, when we’re in two dimensions, we think rows first, columns second. (And as you’ll see in a minute, we start indexing with 1, just as in R in general.)</p>
+<p>Instead, the conceptual difference is specific to aggregating, or “grouping”, operations. In R, <em>grouping</em>, in fact, nicely characterizes what we have in mind: We group by row (dimension 1) for row summaries, by column (dimension 2) for column summaries. In <code>torch</code>, the thinking is different: We <em>collapse</em> the columns (dimension 2) to compute row summaries, the rows (dimension 1) for column summaries.</p>
+<p>The same thinking applies in higher dimensions. Assume, for example, that we been recording time series data for four individuals. There are two features, and both of them have been measured at three times. If we were planning to train a recurrent neural network (much more on that later), we would arrange the measurements like so:</p>
+<ul>
+<li><p>Dimension 1: Runs over individuals.</p></li>
+<li><p>Dimension 2: Runs over points in time.</p></li>
+<li><p>Dimension 3: Runs over features.</p></li>
+</ul>
+<p>The tensor then would look like this:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>t <span class="ot">&lt;-</span> <span class="fu">torch_randn</span>(<span class="dv">4</span>, <span class="dv">3</span>, <span class="dv">2</span>)</span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a>t</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>torch_tensor
+(1,.,.) = 
+  0.7178 -0.4006
+  0.2257  1.1336
+  0.3327  0.9103
+
+(2,.,.) = 
+  0.1509  1.4497
+  1.3868 -0.3618
+  0.2908  0.4527
+
+(3,.,.) = 
+  0.3081  0.8778
+  0.9504  1.5201
+ -0.9536  0.9234
+
+(4,.,.) = 
+ -1.9770  0.0457
+  0.1762 -2.6313
+ -0.8783  0.9404
+[ CPUFloatType{4,3,2} ]</code></pre>
+</div>
+</div>
+<p>To obtain feature averages, independently of subject and time, we would collapse dimensions 1 and 2:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>t<span class="sc">$</span><span class="fu">mean</span>(<span class="at">dim =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>torch_tensor
+ 0.0609
+ 0.4050
+[ CPUFloatType{2} ]</code></pre>
+</div>
+</div>
+<p>If, on the other hand, we wanted feature averages, but individually per person, we’d do:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>t<span class="sc">$</span><span class="fu">mean</span>(<span class="at">dim =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>torch_tensor
+ 0.4254  0.5478
+ 0.6095  0.5135
+ 0.1017  1.1071
+-0.8930 -0.5484
+[ CPUFloatType{4,2} ]</code></pre>
+</div>
+</div>
+<p>Here, the single feature “collapsed” is the time step.</p>
+</section>
+</section>
+<section id="automatic-differentiation" class="level2">
+<h2 class="anchored" data-anchor-id="automatic-differentiation">Automatic Differentiation</h2>
+<p>The key to training neural networks is the ability to compute gradients. In <code>torch</code>, this is done automatically, using the <code>autograd</code> functionality which implements automatic differentiation. The basic idea is that we define a function, and <code>autograd</code> computes its gradient. The function can be arbitrary, but it must be differentiable. Let’s explore how this works in <code>torch</code>.</p>
+<p>In supervised machine learning, we have at our disposal a <em>training set</em>, where the variable we’re hoping to predict is known. This is the target, or <em>ground truth</em>. We now develop and train a prediction algorithm, based on a set of input variables, the <em>predictors</em>. This training, or learning, process, is based on comparing the algorithm’s predictions with the ground truth, a comparison that leads to a number capturing how good or bad the current predictions are. To provide this number is the job of the <em>loss function</em>.</p>
+<p>Given the current loss, an algorithm can adjust its parameters – for example, the <em>weights</em> in a neural network – in order to deliver better predictions. It just has to know in which direction to adjust them. This information is made available by the <em>gradient</em>.</p>
+<p>As an example, we imagine a loss function that looks like (<a href="#fig-autograd-paraboloid">Figure&nbsp;1</a>):</p>
+<div id="fig-autograd-paraboloid" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="https://github.com/skeydan/Deep-Learning-and-Scientific-Computing-with-R-torch/blob/main/images/autograd-paraboloid.png?raw=true" class="img-fluid figure-img" alt="A paraboloid in two dimensions that has a minimum at (0,0)."></p>
+<figcaption class="figure-caption">Figure&nbsp;1: Hypothetical loss function (a paraboloid).</figcaption>
+</figure>
+</div>
+<p>This is a quadratic function of two variables: <span class="math inline">\(f(x_1, x_2) = 0.2 {x_1}^2 + 0.2 {x_2}^2 - 5\)</span>. It has its minimum at <code>(0,0)</code>, and this is the point we’d like to be at. As humans, standing at the location designated by the white dot, and looking at the landscape, we have a pretty clear idea how to go downhill quickly. To find the best direction computationally, however, we compute the gradient.</p>
+<p>Take the <span class="math inline">\(x_1\)</span> direction. The derivative of the function with respect to <span class="math inline">\(x_1\)</span> indicates how its value varies as <span class="math inline">\(x_1\)</span> varies. As we know the function in closed form, we can compute that: <span class="math inline">\(\frac{\partial f}{\partial x_1} = 0.4 x_1\)</span>. This tells us that as <span class="math inline">\(x_1\)</span> increases, loss increases, and how fast. But we want loss to <em>decrease</em>, so we have to go in the opposite direction.</p>
+<p>The same holds for the <span class="math inline">\(x_2\)</span>-axis. We compute the derivative (<span class="math inline">\(\frac{\partial f}{\partial x_2} = 0.4 x_2\)</span>). Again, we want to take the direction opposite to where the derivative points. Overall, this yields a descent direction of <span class="math inline">\(\begin{bmatrix}-0.4x_1\\-0.4x_2 \end{bmatrix}\)</span>.</p>
+<p>Descriptively, this strategy is called <em>steepest descent</em>. Commonly referred to as <em>gradient descent</em>, it is the most basic optimization algorithm in deep learning. Perhaps unintuitively, it is not always the most efficient way. And there’s another question: Can we assume that this direction, computed at the starting point, will remain optimal as we continue descending? Maybe we’d better regularly recompute directions instead? This is why we iterate with gradient descent, and why we need to compute gradients efficiently.</p>
+</section>
+<section id="automatic-differentiation-example" class="level2">
+<h2 class="anchored" data-anchor-id="automatic-differentiation-example">Automatic differentiation example</h2>
+<p><a href="#fig-autograd-compgraph">Figure&nbsp;2</a> is how our above function could be represented in a computational graph. <code>x1</code> and <code>x2</code> are input nodes, corresponding to function parameters <span class="math inline">\(x_1\)</span> and <span class="math inline">\(x_2\)</span>. <code>x7</code> is the function’s output; all other nodes are intermediate ones, necessary to ensure correct order of execution. (We could have given the constants, <code>-5</code> , <code>0.2</code>, and <code>2</code>, their own nodes as well; but as they’re remaining, well, constant anyway, we’re not too interested in them and prefer having a simpler graph.)</p>
+<div id="fig-autograd-compgraph" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="https://github.com/skeydan/Deep-Learning-and-Scientific-Computing-with-R-torch/blob/main/images/autograd-compgraph.png?raw=true" class="img-fluid figure-img" alt="A directed graph where nodes represent data, and arrows, mathematical operations. There are two input nodes, four intermediate nodes, and one output node. Operations used are exponentiation, multiplication, and addition."></p>
+<figcaption class="figure-caption">Figure&nbsp;2: Example of a computational graph.</figcaption>
+</figure>
+</div>
+<p>In reverse-mode AD, the flavor of automatic differentiation implemented by <code>torch</code>, the first thing that happens is to calculate the function’s output value. This corresponds to a forward pass through the graph. Then, a backward pass is performed to calculate the gradient of the output with respect to both inputs, <code>x1</code> and <code>x2</code>. In this process, information becomes available, and is built up, from the right:</p>
+<ul>
+<li><p>At <code>x7</code>, we calculate partial derivatives with respect to <code>x5</code> and <code>x6</code>. Basically, the equation to differentiate looks like this: <span class="math inline">\(f(x_5, x_6) = x_5 + x_6 - 5\)</span>. Thus, both partial derivatives are 1.</p></li>
+<li><p>From <code>x5</code>, we move to the left to see how it depends on <code>x3</code>. We find that <span class="math inline">\(\frac{\partial x_5}{\partial x_3} = 0.2\)</span>. At this point, applying the chain rule of calculus, we already know how the output depends on <code>x3</code>: <span class="math inline">\(\frac{\partial f}{\partial x_3} = 0.2 * 1 = 0.2\)</span>.</p></li>
+<li><p>From <code>x3</code>, we take the final step to <code>x</code>. We learn that <span class="math inline">\(\frac{\partial x_3}{\partial x_1} = 2 x_1\)</span>. Now, we again apply the chain rule, and are able to formulate how the function depends on its first input: <span class="math inline">\(\frac{\partial f}{\partial x_1} = 2 x_1 * 0.2 * 1 = 0.4 x_1\)</span>.</p></li>
+<li><p>Analogously, we determine the second partial derivative, and thus, already have the gradient available: <span class="math inline">\(\nabla f = \frac{\partial f}{\partial x_1} + \frac{\partial f}{\partial x_2} = 0.4 x_1 + 0.4 x_2\)</span>.</p></li>
+</ul>
+<p>That is the principle. In practice, different frameworks implement reverse-mode automatic differentiation differently. Let’s take a look at how <code>torch</code> does it.</p>
+</section>
+<section id="automatic-differentiation-with-torch-autograd" class="level2">
+<h2 class="anchored" data-anchor-id="automatic-differentiation-with-torch-autograd">Automatic differentiation with <code>torch</code> <em>autograd</em></h2>
+<p>First, a quick note on terminology. In <code>torch</code>, the AD engine is usually referred to as <em>autograd</em>, and that is the way you’ll see it denoted in most of the rest of this book. Now, back to the task.</p>
+<p>To construct the above computational graph with <code>torch</code>, we create “source” tensors <code>x1</code> and <code>x2</code>. These will mimic the parameters whose impact we’re interested in. However, if we just proceed “as usual”, creating the tensors the way we’ve been doing so far, <code>torch</code> will not prepare for AD. Instead, we need to pass in <code>requires_grad = TRUE</code> when instantiating those tensors:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb59"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a>x1 <span class="ot">&lt;-</span> <span class="fu">torch_tensor</span>(<span class="dv">2</span>, <span class="at">requires_grad =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a>x2 <span class="ot">&lt;-</span> <span class="fu">torch_tensor</span>(<span class="dv">2</span>, <span class="at">requires_grad =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>(By the way, the value <code>2</code> for both tensors was chosen completely arbitrarily.)</p>
+<p>Now, to create “invisible” nodes <code>x3</code> to <code>x6</code> , we square and multiply accordingly. Then <code>x7</code> stores the final result.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb60"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a>x3 <span class="ot">&lt;-</span> x1<span class="sc">$</span><span class="fu">square</span>()</span>
+<span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a>x5 <span class="ot">&lt;-</span> x3 <span class="sc">*</span> <span class="fl">0.2</span></span>
+<span id="cb60-3"><a href="#cb60-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-4"><a href="#cb60-4" aria-hidden="true" tabindex="-1"></a>x4 <span class="ot">&lt;-</span> x2<span class="sc">$</span><span class="fu">square</span>()</span>
+<span id="cb60-5"><a href="#cb60-5" aria-hidden="true" tabindex="-1"></a>x6 <span class="ot">&lt;-</span> x4 <span class="sc">*</span> <span class="fl">0.2</span></span>
+<span id="cb60-6"><a href="#cb60-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-7"><a href="#cb60-7" aria-hidden="true" tabindex="-1"></a>x7 <span class="ot">&lt;-</span> x5 <span class="sc">+</span> x6 <span class="sc">-</span> <span class="dv">5</span></span>
+<span id="cb60-8"><a href="#cb60-8" aria-hidden="true" tabindex="-1"></a>x7</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>torch_tensor
+-3.4000
+[ CPUFloatType{1} ][ grad_fn = &lt;SubBackward1&gt; ]</code></pre>
+</div>
+</div>
+<p>Note that we have to add <code>requires_grad = TRUE</code> when creating the “source” tensors only. All dependent nodes in the graph inherit this property. For example:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb62"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a>x7<span class="sc">$</span>requires_grad</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] TRUE</code></pre>
+</div>
+</div>
+<p>Now, all prerequisites are fulfilled to see automatic differentiation at work. All we need to do to determine how <code>x7</code> depends on <code>x1</code> and <code>x2</code> is call <code>backward()</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb64"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a>x7<span class="sc">$</span><span class="fu">backward</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Due to this call, the <code>$grad</code> fields have been populated in <code>x1</code> and <code>x2</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb65"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a>x1<span class="sc">$</span>grad</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>torch_tensor
+ 0.8000
+[ CPUFloatType{1} ]</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb67"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a>x2<span class="sc">$</span>grad</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>torch_tensor
+ 0.8000
+[ CPUFloatType{1} ]</code></pre>
+</div>
+</div>
+<p>These are the partial derivatives of <code>x7</code> with respect to <code>x1</code> and <code>x2</code>, respectively. Conforming to our manual calculations above, both amount to 0.8, that is, 0.4 times the tensor values 2 and 2.</p>
+<p>How about the accumulation process we said was needed to build up those end-to-end derivatives? Can we “follow” the end-to-end derivative as it’s being built up? For example, can we see how the final output depends on <code>x3</code>?</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb69"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a>x3<span class="sc">$</span>grad</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>torch_tensor
+[ Tensor (undefined) ]</code></pre>
+</div>
+</div>
+<p>The field does not seem to be populated. In fact, while it <em>has</em> to compute them, <code>torch</code> throws away the intermediate aggregates once they are no longer needed, to save memory. We can, however, ask it to keep them, using <code>retain_grad = TRUE</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb71"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb71-1"><a href="#cb71-1" aria-hidden="true" tabindex="-1"></a>x3 <span class="ot">&lt;-</span> x1<span class="sc">$</span><span class="fu">square</span>()</span>
+<span id="cb71-2"><a href="#cb71-2" aria-hidden="true" tabindex="-1"></a>x3<span class="sc">$</span><span class="fu">retain_grad</span>()</span>
+<span id="cb71-3"><a href="#cb71-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb71-4"><a href="#cb71-4" aria-hidden="true" tabindex="-1"></a>x5 <span class="ot">&lt;-</span> x3 <span class="sc">*</span> <span class="fl">0.2</span></span>
+<span id="cb71-5"><a href="#cb71-5" aria-hidden="true" tabindex="-1"></a>x5<span class="sc">$</span><span class="fu">retain_grad</span>()</span>
+<span id="cb71-6"><a href="#cb71-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb71-7"><a href="#cb71-7" aria-hidden="true" tabindex="-1"></a>x4 <span class="ot">&lt;-</span> x2<span class="sc">$</span><span class="fu">square</span>()</span>
+<span id="cb71-8"><a href="#cb71-8" aria-hidden="true" tabindex="-1"></a>x4<span class="sc">$</span><span class="fu">retain_grad</span>()</span>
+<span id="cb71-9"><a href="#cb71-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb71-10"><a href="#cb71-10" aria-hidden="true" tabindex="-1"></a>x6 <span class="ot">&lt;-</span> x4 <span class="sc">*</span> <span class="fl">0.2</span></span>
+<span id="cb71-11"><a href="#cb71-11" aria-hidden="true" tabindex="-1"></a>x6<span class="sc">$</span><span class="fu">retain_grad</span>()</span>
+<span id="cb71-12"><a href="#cb71-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb71-13"><a href="#cb71-13" aria-hidden="true" tabindex="-1"></a>x7 <span class="ot">&lt;-</span> x5 <span class="sc">+</span> x6 <span class="sc">-</span> <span class="dv">5</span></span>
+<span id="cb71-14"><a href="#cb71-14" aria-hidden="true" tabindex="-1"></a>x7<span class="sc">$</span><span class="fu">backward</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Now, we find that <code>x3</code>’s <code>grad</code> field <em>is</em> populated:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb72"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a>x3<span class="sc">$</span>grad</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>torch_tensor
+ 0.2000
+[ CPUFloatType{1} ]</code></pre>
+</div>
+</div>
+<p>The same goes for <code>x4</code>, <code>x5</code>, and <code>x6</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb74"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a>x4<span class="sc">$</span>grad</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>torch_tensor
+ 0.2000
+[ CPUFloatType{1} ]</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb76"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb76-1"><a href="#cb76-1" aria-hidden="true" tabindex="-1"></a>x5<span class="sc">$</span>grad</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>torch_tensor
+ 1
+[ CPUFloatType{1} ]</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb78"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb78-1"><a href="#cb78-1" aria-hidden="true" tabindex="-1"></a>x6<span class="sc">$</span>grad</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>torch_tensor
+ 1
+[ CPUFloatType{1} ]</code></pre>
+</div>
+</div>
+<p>There is one remaining thing we might be curious about. We’ve managed to catch a glimpse of the gradient-accumulation process from the “running gradient” point of view, in a sense; but how about the individual derivatives that need to be taken in order to proceed with accumulation? For example, what <code>x3$grad</code> tells us is how the output depends on the intermediate state at <code>x3</code>; how do we get from there to <code>x1</code>, the actual input node?</p>
+<p>It turns out that of that aspect, too, we can get an idea. During the forward pass, <code>torch</code> already takes a note on what it will have to do, later, to calculate the individual derivatives. This “recipe” is stored in a tensor’s <code>grad_fn</code> field. For <code>x3</code>, this adds the “missing link” to <code>x1</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb80"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb80-1"><a href="#cb80-1" aria-hidden="true" tabindex="-1"></a>x3<span class="sc">$</span>grad_fn</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>PowBackward0</code></pre>
+</div>
+</div>
+<p>The same works for <code>x4</code>, <code>x5</code>, and <code>x6</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb82"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb82-1"><a href="#cb82-1" aria-hidden="true" tabindex="-1"></a>x4<span class="sc">$</span>grad_fn</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>PowBackward0</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb84"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb84-1"><a href="#cb84-1" aria-hidden="true" tabindex="-1"></a>x5<span class="sc">$</span>grad_fn</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>MulBackward1</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb86"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb86-1"><a href="#cb86-1" aria-hidden="true" tabindex="-1"></a>x6<span class="sc">$</span>grad_fn</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>MulBackward1</code></pre>
+</div>
+</div>
+<p>And there we are! We’ve seen how <code>torch</code> computes derivatives for us, and we’ve even caught a glimpse of how it does it. Now, we are ready to play around with our first two applied tasks.</p>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
