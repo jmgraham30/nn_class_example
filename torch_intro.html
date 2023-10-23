@@ -387,24 +387,24 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell-output cell-output-stdout">
 <pre><code>torch_tensor
 (1,.,.) = 
-  0.7178 -0.4006
-  0.2257  1.1336
-  0.3327  0.9103
+  1.0815 -0.8354
+  0.7006  0.6766
+ -0.7014  0.3816
 
 (2,.,.) = 
-  0.1509  1.4497
-  1.3868 -0.3618
-  0.2908  0.4527
+ -0.1055  0.8734
+  0.1974 -0.2372
+  1.4540 -1.1459
 
 (3,.,.) = 
-  0.3081  0.8778
-  0.9504  1.5201
- -0.9536  0.9234
+  0.6509  0.4629
+  0.5060  0.2232
+  0.0782  0.4419
 
 (4,.,.) = 
- -1.9770  0.0457
-  0.1762 -2.6313
- -0.8783  0.9404
+  0.3984  0.6149
+  0.5050  0.4147
+ -0.6308  1.1310
 [ CPUFloatType{4,3,2} ]</code></pre>
 </div>
 </div>
@@ -413,8 +413,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>t<span class="sc">$</span><span class="fu">mean</span>(<span class="at">dim =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>torch_tensor
- 0.0609
- 0.4050
+ 0.3445
+ 0.2501
 [ CPUFloatType{2} ]</code></pre>
 </div>
 </div>
@@ -423,10 +423,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>t<span class="sc">$</span><span class="fu">mean</span>(<span class="at">dim =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>torch_tensor
- 0.4254  0.5478
- 0.6095  0.5135
- 0.1017  1.1071
--0.8930 -0.5484
+ 0.3602  0.0742
+ 0.5153 -0.1699
+ 0.4117  0.3760
+ 0.0909  0.7202
 [ CPUFloatType{4,2} ]</code></pre>
 </div>
 </div>
@@ -470,7 +470,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="automatic-differentiation-with-torch-autograd" class="level2">
 <h2 class="anchored" data-anchor-id="automatic-differentiation-with-torch-autograd">Automatic differentiation with <code>torch</code> <em>autograd</em></h2>
-<p>First, a quick note on terminology. In <code>torch</code>, the AD engine is usually referred to as <em>autograd</em>, and that is the way you’ll see it denoted in most of the rest of this book. Now, back to the task.</p>
+<p>First, a quick note on terminology. In <code>torch</code>, the AD engine is usually referred to as <em>autograd</em>.</p>
 <p>To construct the above computational graph with <code>torch</code>, we create “source” tensors <code>x1</code> and <code>x2</code>. These will mimic the parameters whose impact we’re interested in. However, if we just proceed “as usual”, creating the tensors the way we’ve been doing so far, <code>torch</code> will not prepare for AD. Instead, we need to pass in <code>requires_grad = TRUE</code> when instantiating those tensors:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb59"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a>x1 <span class="ot">&lt;-</span> <span class="fu">torch_tensor</span>(<span class="dv">2</span>, <span class="at">requires_grad =</span> <span class="cn">TRUE</span>)</span>
@@ -599,6 +599,83 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 <p>And there we are! We’ve seen how <code>torch</code> computes derivatives for us, and we’ve even caught a glimpse of how it does it. Now, we are ready to play around with our first two applied tasks.</p>
+<section id="function-minimization-using-autograd-via-torch" class="level3">
+<h3 class="anchored" data-anchor-id="function-minimization-using-autograd-via-torch">Function Minimization using Autograd via <code>torch</code></h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb88"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb88-1"><a href="#cb88-1" aria-hidden="true" tabindex="-1"></a>a <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb88-2"><a href="#cb88-2" aria-hidden="true" tabindex="-1"></a>b <span class="ot">&lt;-</span> <span class="dv">5</span></span>
+<span id="cb88-3"><a href="#cb88-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb88-4"><a href="#cb88-4" aria-hidden="true" tabindex="-1"></a>rosenbrock <span class="ot">&lt;-</span> <span class="cf">function</span>(x) {</span>
+<span id="cb88-5"><a href="#cb88-5" aria-hidden="true" tabindex="-1"></a>  x1 <span class="ot">&lt;-</span> x[<span class="dv">1</span>]</span>
+<span id="cb88-6"><a href="#cb88-6" aria-hidden="true" tabindex="-1"></a>  x2 <span class="ot">&lt;-</span> x[<span class="dv">2</span>]</span>
+<span id="cb88-7"><a href="#cb88-7" aria-hidden="true" tabindex="-1"></a>  (a <span class="sc">-</span> x1)<span class="sc">^</span><span class="dv">2</span> <span class="sc">+</span> b <span class="sc">*</span> (x2 <span class="sc">-</span> x1<span class="sc">^</span><span class="dv">2</span>)<span class="sc">^</span><span class="dv">2</span></span>
+<span id="cb88-8"><a href="#cb88-8" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb88-9"><a href="#cb88-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb88-10"><a href="#cb88-10" aria-hidden="true" tabindex="-1"></a>num_iterations <span class="ot">&lt;-</span> <span class="dv">1000</span></span>
+<span id="cb88-11"><a href="#cb88-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb88-12"><a href="#cb88-12" aria-hidden="true" tabindex="-1"></a>lr <span class="ot">&lt;-</span> <span class="fl">0.01</span></span>
+<span id="cb88-13"><a href="#cb88-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb88-14"><a href="#cb88-14" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">torch_tensor</span>(<span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">1</span>), <span class="at">requires_grad =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb88-15"><a href="#cb88-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb88-16"><a href="#cb88-16" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>num_iterations) {</span>
+<span id="cb88-17"><a href="#cb88-17" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (i <span class="sc">%%</span> <span class="dv">100</span> <span class="sc">==</span> <span class="dv">0</span>) <span class="fu">cat</span>(<span class="st">"Iteration: "</span>, i, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb88-18"><a href="#cb88-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb88-19"><a href="#cb88-19" aria-hidden="true" tabindex="-1"></a>  value <span class="ot">&lt;-</span> <span class="fu">rosenbrock</span>(x)</span>
+<span id="cb88-20"><a href="#cb88-20" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (i <span class="sc">%%</span> <span class="dv">100</span> <span class="sc">==</span> <span class="dv">0</span>) {</span>
+<span id="cb88-21"><a href="#cb88-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span>(<span class="st">"Value is: "</span>, <span class="fu">as.numeric</span>(value), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb88-22"><a href="#cb88-22" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb88-23"><a href="#cb88-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb88-24"><a href="#cb88-24" aria-hidden="true" tabindex="-1"></a>  value<span class="sc">$</span><span class="fu">backward</span>()</span>
+<span id="cb88-25"><a href="#cb88-25" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (i <span class="sc">%%</span> <span class="dv">100</span> <span class="sc">==</span> <span class="dv">0</span>) {</span>
+<span id="cb88-26"><a href="#cb88-26" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span>(<span class="st">"Gradient is: "</span>, <span class="fu">as.matrix</span>(x<span class="sc">$</span>grad), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb88-27"><a href="#cb88-27" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb88-28"><a href="#cb88-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb88-29"><a href="#cb88-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">with_no_grad</span>({</span>
+<span id="cb88-30"><a href="#cb88-30" aria-hidden="true" tabindex="-1"></a>    x<span class="sc">$</span><span class="fu">sub_</span>(lr <span class="sc">*</span> x<span class="sc">$</span>grad)</span>
+<span id="cb88-31"><a href="#cb88-31" aria-hidden="true" tabindex="-1"></a>    x<span class="sc">$</span>grad<span class="sc">$</span><span class="fu">zero_</span>()</span>
+<span id="cb88-32"><a href="#cb88-32" aria-hidden="true" tabindex="-1"></a>  })</span>
+<span id="cb88-33"><a href="#cb88-33" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Iteration:  100 
+Value is:  0.3502924 
+Gradient is:  -0.667685 -0.5771312 
+Iteration:  200 
+Value is:  0.07398106 
+Gradient is:  -0.1603189 -0.2532476 
+Iteration:  300 
+Value is:  0.02483024 
+Gradient is:  -0.07679074 -0.1373911 
+Iteration:  400 
+Value is:  0.009619333 
+Gradient is:  -0.04347242 -0.08254051 
+Iteration:  500 
+Value is:  0.003990697 
+Gradient is:  -0.02652063 -0.05206227 
+Iteration:  600 
+Value is:  0.001719962 
+Gradient is:  -0.01683905 -0.03373682 
+Iteration:  700 
+Value is:  0.0007584976 
+Gradient is:  -0.01095017 -0.02221584 
+Iteration:  800 
+Value is:  0.0003393509 
+Gradient is:  -0.007221781 -0.01477957 
+Iteration:  900 
+Value is:  0.0001532408 
+Gradient is:  -0.004811743 -0.009894371 
+Iteration:  1000 
+Value is:  6.962555e-05 
+Gradient is:  -0.003222887 -0.006653666 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb90"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb90-1"><a href="#cb90-1" aria-hidden="true" tabindex="-1"></a>x</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>torch_tensor
+ 0.9918
+ 0.9830
+[ CPUFloatType{2} ][ requires_grad = TRUE ]</code></pre>
+</div>
+</div>
+</section>
 </section>
 
 </main>

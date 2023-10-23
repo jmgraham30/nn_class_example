@@ -392,4 +392,44 @@ x6$grad_fn
 
 And there we are! We've seen how `torch` computes derivatives for us, and we've even caught a glimpse of how it does it. Now, we are ready to play around with our first two applied tasks.
 
+### Function Minimization using Autograd via `torch`
 
+
+```{r}
+
+a <- 1
+b <- 5
+
+rosenbrock <- function(x) {
+  x1 <- x[1]
+  x2 <- x[2]
+  (a - x1)^2 + b * (x2 - x1^2)^2
+}
+
+num_iterations <- 1000
+
+lr <- 0.01
+
+x <- torch_tensor(c(-1, 1), requires_grad = TRUE)
+
+for (i in 1:num_iterations) {
+  if (i %% 100 == 0) cat("Iteration: ", i, "\n")
+
+  value <- rosenbrock(x)
+  if (i %% 100 == 0) {
+    cat("Value is: ", as.numeric(value), "\n")
+  }
+
+  value$backward()
+  if (i %% 100 == 0) {
+    cat("Gradient is: ", as.matrix(x$grad), "\n")
+  }
+
+  with_no_grad({
+    x$sub_(lr * x$grad)
+    x$grad$zero_()
+  })
+}
+
+x
+```
