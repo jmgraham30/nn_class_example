@@ -222,7 +222,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <pre><code>torch_device(type='cpu')</code></pre>
 </div>
 </div>
-<p>When it comes to deep learning, there is another consideration regarding data. Deep learning is typically done on very large data sets. If you have a large data set, you probably don’t want to load it all into memory at once. Instead, you want to load it in batches and <code>torch</code> has functions for handling this. Specifically, <code>dataset()</code> and <code>tensor_dataset()</code> are designed to handle this. The former is for data that is not already in tensor form, the latter is for data that is already in tensor form, or close to it. We’ll see an examples that utilize these functions of later.</p>
+<p>When it comes to deep learning, there is another consideration regarding data. Deep learning is typically done on very large data sets. If you have a large data set, you probably don’t want to load it all into memory at once. Instead, you want to load it in batches and <code>torch</code> has functions for handling this. Specifically, <code>dataset()</code>, <code>tensor_dataset()</code>, and <code>dataloader()</code> are designed to handle this. The former is for data that is not already in tensor form, the latter is for data that is already in tensor form, or close to it. We’ll see an examples that utilize these functions of later.</p>
 <section id="operations-on-tensors" class="level3">
 <h3 class="anchored" data-anchor-id="operations-on-tensors">Operations on Tensors</h3>
 <p>We can perform all the usual mathematical operations on tensors: add, subtract, divide … These operations are available as functions (starting with <code>torch_</code>) as well as as methods on objects (invoked with <code>$</code>-syntax). For example, the following are equivalent:</p>
@@ -388,24 +388,24 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell-output cell-output-stdout">
 <pre><code>torch_tensor
 (1,.,.) = 
-  0.7749 -0.1415
-  0.7576  1.1992
-  1.4052  1.1076
+  0.0346  0.1059
+  1.0067  2.1955
+  0.5340  0.7527
 
 (2,.,.) = 
- -1.1358 -0.0456
- -2.1785 -1.2983
-  0.0714  1.1354
+ -2.0667 -0.5384
+ -0.9471  0.4926
+ -0.1744  0.7522
 
 (3,.,.) = 
- -1.0068  0.0201
-  0.1515  1.4242
- -0.1396  0.1607
+  1.2194  0.1181
+  1.2421  0.1544
+  1.9739 -0.8019
 
 (4,.,.) = 
- -0.3022 -1.4039
-  1.7063  1.0330
- -0.2114  0.3139
+ -0.3512 -0.1531
+ -0.7139  0.0851
+ -1.9054  0.8666
 [ CPUFloatType{4,3,2} ]</code></pre>
 </div>
 </div>
@@ -414,8 +414,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>t<span class="sc">$</span><span class="fu">mean</span>(<span class="at">dim =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>torch_tensor
--0.0089
- 0.2921
+-0.0123
+ 0.3358
 [ CPUFloatType{2} ]</code></pre>
 </div>
 </div>
@@ -424,10 +424,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>t<span class="sc">$</span><span class="fu">mean</span>(<span class="at">dim =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>torch_tensor
- 0.9792  0.7218
--1.0810 -0.0695
--0.3316  0.5350
- 0.3976 -0.0190
+ 0.5251  1.0180
+-1.0627  0.2355
+ 1.4784 -0.1764
+-0.9902  0.2662
 [ CPUFloatType{4,2} ]</code></pre>
 </div>
 </div>
@@ -750,26 +750,26 @@ Gradient is:  -0.003222887 -0.006653666 </code></pre>
 <span id="cb92-63"><a href="#cb92-63" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb92-64"><a href="#cb92-64" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Epoch:  10    Loss:  48.28449 
-Epoch:  20    Loss:  42.99234 
-Epoch:  30    Loss:  38.43371 
-Epoch:  40    Loss:  34.5081 
-Epoch:  50    Loss:  31.09073 
-Epoch:  60    Loss:  28.11134 
-Epoch:  70    Loss:  25.50539 
-Epoch:  80    Loss:  23.22923 
-Epoch:  90    Loss:  21.24164 
-Epoch:  100    Loss:  19.49332 
-Epoch:  110    Loss:  17.95671 
-Epoch:  120    Loss:  16.59834 
-Epoch:  130    Loss:  15.39582 
-Epoch:  140    Loss:  14.32868 
-Epoch:  150    Loss:  13.38003 
-Epoch:  160    Loss:  12.53712 
-Epoch:  170    Loss:  11.78353 
-Epoch:  180    Loss:  11.10844 
-Epoch:  190    Loss:  10.50331 
-Epoch:  200    Loss:  9.958858 </code></pre>
+<pre><code>Epoch:  10    Loss:  36.53365 
+Epoch:  20    Loss:  32.82933 
+Epoch:  30    Loss:  29.63474 
+Epoch:  40    Loss:  26.89863 
+Epoch:  50    Loss:  24.51958 
+Epoch:  60    Loss:  22.43963 
+Epoch:  70    Loss:  20.61478 
+Epoch:  80    Loss:  19.00954 
+Epoch:  90    Loss:  17.59019 
+Epoch:  100    Loss:  16.33298 
+Epoch:  110    Loss:  15.21571 
+Epoch:  120    Loss:  14.22108 
+Epoch:  130    Loss:  13.33521 
+Epoch:  140    Loss:  12.54481 
+Epoch:  150    Loss:  11.83584 
+Epoch:  160    Loss:  11.19725 
+Epoch:  170    Loss:  10.61986 
+Epoch:  180    Loss:  10.09724 
+Epoch:  190    Loss:  9.623425 
+Epoch:  200    Loss:  9.192407 </code></pre>
 </div>
 </div>
 </section>

@@ -94,7 +94,7 @@ penguins_tt
 ```
 
 
-When it comes to deep learning, there is another consideration regarding data. Deep learning is typically done on very large data sets. If you have a large data set, you probably don't want to load it all into memory at once. Instead, you want to load it in batches and `torch` has functions for handling this. Specifically, `dataset()` and `tensor_dataset()` are designed to handle this. The former is for data that is not already in tensor form, the latter is for data that is already in tensor form, or close to it. We'll see an examples that utilize these functions of later. 
+When it comes to deep learning, there is another consideration regarding data. Deep learning is typically done on very large data sets. If you have a large data set, you probably don't want to load it all into memory at once. Instead, you want to load it in batches and `torch` has functions for handling this. Specifically, `dataset()`, `tensor_dataset()`, and `dataloader()` are designed to handle this. The former is for data that is not already in tensor form, the latter is for data that is already in tensor form, or close to it. We'll see an examples that utilize these functions of later. 
 
 ### Operations on Tensors
 
