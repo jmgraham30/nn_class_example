@@ -28,4 +28,3 @@ train_dl <- dataloader(train_ds, batch_size = 1, shuffle = TRUE)
 
 test_dl <- dataloader(test_ds, batch_size = 1, shuffle = TRUE)
 
-
