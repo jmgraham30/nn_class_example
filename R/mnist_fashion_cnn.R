@@ -6,10 +6,6 @@ library(luz)
 
 fashion_mnist <- dataset_fashion_mnist()
 
-transform <- function(x) {
-  transform_to_tensor(x)
-}
-
 
 fashion_mnist_train_x <- fashion_mnist$train$x %>%
   torch_tensor()
