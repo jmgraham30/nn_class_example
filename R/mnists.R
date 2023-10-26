@@ -6,7 +6,7 @@ hand_digits <- dataset_mnist()
 
 digits <- hand_digits$train$x
 
-sample_image <- as.data.frame(digits[1, , ])
+sample_image <- as.data.frame(digits[13, , ])
 colnames(sample_image) <- seq_len(ncol(sample_image))
 sample_image$y <- seq_len(nrow(sample_image))
 sample_image <- gather(sample_image, "x", "value", -y)
@@ -17,7 +17,7 @@ ggplot(sample_image, aes(x = x, y = y, fill = value)) +
   theme(panel.grid = element_blank(), legend.position = "none") +
   theme(aspect.ratio = 1) + xlab("") + ylab("")
 
-hand_digits$train$y[1]
+hand_digits$train$y[13]
 
 fashion_mnist <- dataset_fashion_mnist()
 

@@ -388,24 +388,24 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell-output cell-output-stdout">
 <pre><code>torch_tensor
 (1,.,.) = 
-  0.0346  0.1059
-  1.0067  2.1955
-  0.5340  0.7527
+ -0.1367  1.5176
+  1.2313 -0.6094
+  0.3685 -3.3861
 
 (2,.,.) = 
- -2.0667 -0.5384
- -0.9471  0.4926
- -0.1744  0.7522
+  0.4719 -0.9249
+  0.9753 -1.4884
+  0.2972 -1.2412
 
 (3,.,.) = 
-  1.2194  0.1181
-  1.2421  0.1544
-  1.9739 -0.8019
+ -0.0646 -0.9621
+  1.6924  0.5417
+  0.4457  2.6512
 
 (4,.,.) = 
- -0.3512 -0.1531
- -0.7139  0.0851
- -1.9054  0.8666
+  0.0523  1.5565
+  0.6457  0.3132
+  0.6980 -1.5609
 [ CPUFloatType{4,3,2} ]</code></pre>
 </div>
 </div>
@@ -414,8 +414,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>t<span class="sc">$</span><span class="fu">mean</span>(<span class="at">dim =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>torch_tensor
--0.0123
- 0.3358
+ 0.5564
+-0.2994
 [ CPUFloatType{2} ]</code></pre>
 </div>
 </div>
@@ -424,10 +424,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>t<span class="sc">$</span><span class="fu">mean</span>(<span class="at">dim =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>torch_tensor
- 0.5251  1.0180
--1.0627  0.2355
- 1.4784 -0.1764
--0.9902  0.2662
+ 0.4877 -0.8260
+ 0.5815 -1.2182
+ 0.6912  0.7436
+ 0.4653  0.1029
 [ CPUFloatType{4,2} ]</code></pre>
 </div>
 </div>
@@ -602,6 +602,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>And there we are! We’ve seen how <code>torch</code> computes derivatives for us, and we’ve even caught a glimpse of how it does it. Now, we are ready to play around with our first two applied tasks.</p>
 <section id="function-minimization-using-autograd-via-torch" class="level3">
 <h3 class="anchored" data-anchor-id="function-minimization-using-autograd-via-torch">Function Minimization using Autograd via <code>torch</code></h3>
+<p>As an application of automatic differentiation, let’s try to minimize the <a href="https://en.wikipedia.org/wiki/Rosenbrock_function">Rosenbrock function</a> using gradient descent. The Rosenbrock function is a function of two variables; its minimum is at <code>(1,1)</code>. If you take a look at its contours, you see that the minimum lies inside a stretched-out, narrow valley (<a href="#fig-optim-1-rosenbrock">Figure&nbsp;3</a>):</p>
+<div id="fig-optim-1-rosenbrock" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="https://github.com/skeydan/Deep-Learning-and-Scientific-Computing-with-R-torch/blob/main/images/optim-1-rosenbrock.png?raw=true" class="img-fluid figure-img" alt="Contour plot of a function in two variables, where the small function values lie inside a stretched-out, narrow valley."></p>
+<figcaption class="figure-caption">Figure&nbsp;3: Rosenbrock function.</figcaption>
+</figure>
+</div>
+<p>Here is the function definition. <code>a</code> and <code>b</code> are parameters that can be freely chosen; the values we use here are a frequent choice.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb88"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb88-1"><a href="#cb88-1" aria-hidden="true" tabindex="-1"></a>a <span class="ot">&lt;-</span> <span class="dv">1</span></span>
 <span id="cb88-2"><a href="#cb88-2" aria-hidden="true" tabindex="-1"></a>b <span class="ot">&lt;-</span> <span class="dv">5</span></span>
@@ -610,32 +618,34 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb88-5"><a href="#cb88-5" aria-hidden="true" tabindex="-1"></a>  x1 <span class="ot">&lt;-</span> x[<span class="dv">1</span>]</span>
 <span id="cb88-6"><a href="#cb88-6" aria-hidden="true" tabindex="-1"></a>  x2 <span class="ot">&lt;-</span> x[<span class="dv">2</span>]</span>
 <span id="cb88-7"><a href="#cb88-7" aria-hidden="true" tabindex="-1"></a>  (a <span class="sc">-</span> x1)<span class="sc">^</span><span class="dv">2</span> <span class="sc">+</span> b <span class="sc">*</span> (x2 <span class="sc">-</span> x1<span class="sc">^</span><span class="dv">2</span>)<span class="sc">^</span><span class="dv">2</span></span>
-<span id="cb88-8"><a href="#cb88-8" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb88-9"><a href="#cb88-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb88-10"><a href="#cb88-10" aria-hidden="true" tabindex="-1"></a>num_iterations <span class="ot">&lt;-</span> <span class="dv">1000</span></span>
-<span id="cb88-11"><a href="#cb88-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb88-12"><a href="#cb88-12" aria-hidden="true" tabindex="-1"></a>lr <span class="ot">&lt;-</span> <span class="fl">0.01</span></span>
-<span id="cb88-13"><a href="#cb88-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb88-14"><a href="#cb88-14" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">torch_tensor</span>(<span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">1</span>), <span class="at">requires_grad =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb88-15"><a href="#cb88-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb88-16"><a href="#cb88-16" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>num_iterations) {</span>
-<span id="cb88-17"><a href="#cb88-17" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (i <span class="sc">%%</span> <span class="dv">100</span> <span class="sc">==</span> <span class="dv">0</span>) <span class="fu">cat</span>(<span class="st">"Iteration: "</span>, i, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb88-18"><a href="#cb88-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb88-19"><a href="#cb88-19" aria-hidden="true" tabindex="-1"></a>  value <span class="ot">&lt;-</span> <span class="fu">rosenbrock</span>(x)</span>
-<span id="cb88-20"><a href="#cb88-20" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (i <span class="sc">%%</span> <span class="dv">100</span> <span class="sc">==</span> <span class="dv">0</span>) {</span>
-<span id="cb88-21"><a href="#cb88-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span>(<span class="st">"Value is: "</span>, <span class="fu">as.numeric</span>(value), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb88-22"><a href="#cb88-22" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb88-23"><a href="#cb88-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb88-24"><a href="#cb88-24" aria-hidden="true" tabindex="-1"></a>  value<span class="sc">$</span><span class="fu">backward</span>()</span>
-<span id="cb88-25"><a href="#cb88-25" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (i <span class="sc">%%</span> <span class="dv">100</span> <span class="sc">==</span> <span class="dv">0</span>) {</span>
-<span id="cb88-26"><a href="#cb88-26" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span>(<span class="st">"Gradient is: "</span>, <span class="fu">as.matrix</span>(x<span class="sc">$</span>grad), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb88-27"><a href="#cb88-27" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb88-28"><a href="#cb88-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb88-29"><a href="#cb88-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">with_no_grad</span>({</span>
-<span id="cb88-30"><a href="#cb88-30" aria-hidden="true" tabindex="-1"></a>    x<span class="sc">$</span><span class="fu">sub_</span>(lr <span class="sc">*</span> x<span class="sc">$</span>grad)</span>
-<span id="cb88-31"><a href="#cb88-31" aria-hidden="true" tabindex="-1"></a>    x<span class="sc">$</span>grad<span class="sc">$</span><span class="fu">zero_</span>()</span>
-<span id="cb88-32"><a href="#cb88-32" aria-hidden="true" tabindex="-1"></a>  })</span>
-<span id="cb88-33"><a href="#cb88-33" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb88-8"><a href="#cb88-8" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Here is the gradient descent implementation:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb89"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb89-1"><a href="#cb89-1" aria-hidden="true" tabindex="-1"></a>num_iterations <span class="ot">&lt;-</span> <span class="dv">1000</span></span>
+<span id="cb89-2"><a href="#cb89-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb89-3"><a href="#cb89-3" aria-hidden="true" tabindex="-1"></a>lr <span class="ot">&lt;-</span> <span class="fl">0.01</span></span>
+<span id="cb89-4"><a href="#cb89-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb89-5"><a href="#cb89-5" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">torch_tensor</span>(<span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">1</span>), <span class="at">requires_grad =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb89-6"><a href="#cb89-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb89-7"><a href="#cb89-7" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>num_iterations) {</span>
+<span id="cb89-8"><a href="#cb89-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (i <span class="sc">%%</span> <span class="dv">100</span> <span class="sc">==</span> <span class="dv">0</span>) <span class="fu">cat</span>(<span class="st">"Iteration: "</span>, i, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb89-9"><a href="#cb89-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb89-10"><a href="#cb89-10" aria-hidden="true" tabindex="-1"></a>  value <span class="ot">&lt;-</span> <span class="fu">rosenbrock</span>(x)</span>
+<span id="cb89-11"><a href="#cb89-11" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (i <span class="sc">%%</span> <span class="dv">100</span> <span class="sc">==</span> <span class="dv">0</span>) {</span>
+<span id="cb89-12"><a href="#cb89-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span>(<span class="st">"Value is: "</span>, <span class="fu">as.numeric</span>(value), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb89-13"><a href="#cb89-13" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb89-14"><a href="#cb89-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb89-15"><a href="#cb89-15" aria-hidden="true" tabindex="-1"></a>  value<span class="sc">$</span><span class="fu">backward</span>()</span>
+<span id="cb89-16"><a href="#cb89-16" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (i <span class="sc">%%</span> <span class="dv">100</span> <span class="sc">==</span> <span class="dv">0</span>) {</span>
+<span id="cb89-17"><a href="#cb89-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span>(<span class="st">"Gradient is: "</span>, <span class="fu">as.matrix</span>(x<span class="sc">$</span>grad), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb89-18"><a href="#cb89-18" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb89-19"><a href="#cb89-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb89-20"><a href="#cb89-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">with_no_grad</span>({</span>
+<span id="cb89-21"><a href="#cb89-21" aria-hidden="true" tabindex="-1"></a>    x<span class="sc">$</span><span class="fu">sub_</span>(lr <span class="sc">*</span> x<span class="sc">$</span>grad) <span class="co"># gradient descent formula</span></span>
+<span id="cb89-22"><a href="#cb89-22" aria-hidden="true" tabindex="-1"></a>    x<span class="sc">$</span>grad<span class="sc">$</span><span class="fu">zero_</span>()</span>
+<span id="cb89-23"><a href="#cb89-23" aria-hidden="true" tabindex="-1"></a>  })</span>
+<span id="cb89-24"><a href="#cb89-24" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Iteration:  100 
 Value is:  0.3502924 
@@ -668,7 +678,7 @@ Iteration:  1000
 Value is:  6.962555e-05 
 Gradient is:  -0.003222887 -0.006653666 </code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb90"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb90-1"><a href="#cb90-1" aria-hidden="true" tabindex="-1"></a>x</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb91"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb91-1"><a href="#cb91-1" aria-hidden="true" tabindex="-1"></a>x</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>torch_tensor
  0.9918
@@ -676,6 +686,10 @@ Gradient is:  -0.003222887 -0.006653666 </code></pre>
 [ CPUFloatType{2} ][ requires_grad = TRUE ]</code></pre>
 </div>
 </div>
+</section>
+</section>
+<section id="a-neural-network-from-scratch" class="level2">
+<h2 class="anchored" data-anchor-id="a-neural-network-from-scratch">A Neural network from scratch</h2>
 <p>We can now code a simple neural network from scratch by implementing the following steps:</p>
 <ul>
 <li><p>compute predictions (forward pass),</p></li>
@@ -685,94 +699,162 @@ Gradient is:  -0.003222887 -0.006653666 </code></pre>
 </ul>
 <p>In code:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb92"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb92-1"><a href="#cb92-1" aria-hidden="true" tabindex="-1"></a><span class="co"># input dimensionality (number of input features)</span></span>
-<span id="cb92-2"><a href="#cb92-2" aria-hidden="true" tabindex="-1"></a>d_in <span class="ot">&lt;-</span> <span class="dv">3</span></span>
-<span id="cb92-3"><a href="#cb92-3" aria-hidden="true" tabindex="-1"></a><span class="co"># number of observations in training set</span></span>
-<span id="cb92-4"><a href="#cb92-4" aria-hidden="true" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="dv">100</span></span>
-<span id="cb92-5"><a href="#cb92-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb92-6"><a href="#cb92-6" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">torch_randn</span>(n, d_in)</span>
-<span id="cb92-7"><a href="#cb92-7" aria-hidden="true" tabindex="-1"></a>coefs <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">0.2</span>, <span class="sc">-</span><span class="fl">1.3</span>, <span class="sc">-</span><span class="fl">0.5</span>)</span>
-<span id="cb92-8"><a href="#cb92-8" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> x<span class="sc">$</span><span class="fu">matmul</span>(coefs)<span class="sc">$</span><span class="fu">unsqueeze</span>(<span class="dv">2</span>) <span class="sc">+</span> <span class="fu">torch_randn</span>(n, <span class="dv">1</span>)</span>
-<span id="cb92-9"><a href="#cb92-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb92-10"><a href="#cb92-10" aria-hidden="true" tabindex="-1"></a><span class="co"># dimensionality of hidden layer</span></span>
-<span id="cb92-11"><a href="#cb92-11" aria-hidden="true" tabindex="-1"></a>d_hidden <span class="ot">&lt;-</span> <span class="dv">32</span></span>
-<span id="cb92-12"><a href="#cb92-12" aria-hidden="true" tabindex="-1"></a><span class="co"># output dimensionality (number of predicted features)</span></span>
-<span id="cb92-13"><a href="#cb92-13" aria-hidden="true" tabindex="-1"></a>d_out <span class="ot">&lt;-</span> <span class="dv">1</span></span>
-<span id="cb92-14"><a href="#cb92-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb92-15"><a href="#cb92-15" aria-hidden="true" tabindex="-1"></a><span class="co"># weights connecting input to hidden layer</span></span>
-<span id="cb92-16"><a href="#cb92-16" aria-hidden="true" tabindex="-1"></a>w1 <span class="ot">&lt;-</span> <span class="fu">torch_randn</span>(d_in, d_hidden, <span class="at">requires_grad =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb92-17"><a href="#cb92-17" aria-hidden="true" tabindex="-1"></a><span class="co"># weights connecting hidden to output layer</span></span>
-<span id="cb92-18"><a href="#cb92-18" aria-hidden="true" tabindex="-1"></a>w2 <span class="ot">&lt;-</span> <span class="fu">torch_randn</span>(d_hidden, d_out, <span class="at">requires_grad =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb92-19"><a href="#cb92-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb92-20"><a href="#cb92-20" aria-hidden="true" tabindex="-1"></a><span class="co"># hidden layer bias</span></span>
-<span id="cb92-21"><a href="#cb92-21" aria-hidden="true" tabindex="-1"></a>b1 <span class="ot">&lt;-</span> <span class="fu">torch_zeros</span>(<span class="dv">1</span>, d_hidden, <span class="at">requires_grad =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb92-22"><a href="#cb92-22" aria-hidden="true" tabindex="-1"></a><span class="co"># output layer bias</span></span>
-<span id="cb92-23"><a href="#cb92-23" aria-hidden="true" tabindex="-1"></a>b2 <span class="ot">&lt;-</span> <span class="fu">torch_zeros</span>(<span class="dv">1</span>, d_out, <span class="at">requires_grad =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb92-24"><a href="#cb92-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb92-25"><a href="#cb92-25" aria-hidden="true" tabindex="-1"></a>learning_rate <span class="ot">&lt;-</span> <span class="fl">1e-4</span></span>
-<span id="cb92-26"><a href="#cb92-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb92-27"><a href="#cb92-27" aria-hidden="true" tabindex="-1"></a><span class="do">### training loop ----------------------------------------</span></span>
-<span id="cb92-28"><a href="#cb92-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb92-29"><a href="#cb92-29" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (t <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">200</span>) {</span>
-<span id="cb92-30"><a href="#cb92-30" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb92-31"><a href="#cb92-31" aria-hidden="true" tabindex="-1"></a>  <span class="do">### -------- Forward pass --------</span></span>
-<span id="cb92-32"><a href="#cb92-32" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb92-33"><a href="#cb92-33" aria-hidden="true" tabindex="-1"></a>  y_pred <span class="ot">&lt;-</span> x<span class="sc">$</span><span class="fu">mm</span>(w1)<span class="sc">$</span><span class="fu">add</span>(b1)<span class="sc">$</span><span class="fu">relu</span>()<span class="sc">$</span><span class="fu">mm</span>(w2)<span class="sc">$</span><span class="fu">add</span>(b2)</span>
-<span id="cb92-34"><a href="#cb92-34" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb92-35"><a href="#cb92-35" aria-hidden="true" tabindex="-1"></a>  <span class="do">### -------- Compute loss -------- </span></span>
-<span id="cb92-36"><a href="#cb92-36" aria-hidden="true" tabindex="-1"></a>  loss <span class="ot">&lt;-</span> (y_pred <span class="sc">-</span> y)<span class="sc">$</span><span class="fu">pow</span>(<span class="dv">2</span>)<span class="sc">$</span><span class="fu">mean</span>()</span>
-<span id="cb92-37"><a href="#cb92-37" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (t <span class="sc">%%</span> <span class="dv">10</span> <span class="sc">==</span> <span class="dv">0</span>)</span>
-<span id="cb92-38"><a href="#cb92-38" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span>(<span class="st">"Epoch: "</span>, t, <span class="st">"   Loss: "</span>, loss<span class="sc">$</span><span class="fu">item</span>(), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb92-39"><a href="#cb92-39" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb92-40"><a href="#cb92-40" aria-hidden="true" tabindex="-1"></a>  <span class="do">### -------- Backpropagation --------</span></span>
-<span id="cb92-41"><a href="#cb92-41" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb92-42"><a href="#cb92-42" aria-hidden="true" tabindex="-1"></a>  <span class="co"># compute gradient of loss w.r.t. all tensors with</span></span>
-<span id="cb92-43"><a href="#cb92-43" aria-hidden="true" tabindex="-1"></a>  <span class="co"># requires_grad = TRUE</span></span>
-<span id="cb92-44"><a href="#cb92-44" aria-hidden="true" tabindex="-1"></a>  loss<span class="sc">$</span><span class="fu">backward</span>()</span>
-<span id="cb92-45"><a href="#cb92-45" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb92-46"><a href="#cb92-46" aria-hidden="true" tabindex="-1"></a>  <span class="do">### -------- Update weights -------- </span></span>
-<span id="cb92-47"><a href="#cb92-47" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb92-48"><a href="#cb92-48" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Wrap in with_no_grad() because this is a part we don't </span></span>
-<span id="cb92-49"><a href="#cb92-49" aria-hidden="true" tabindex="-1"></a>  <span class="co"># want to record for automatic gradient computation</span></span>
-<span id="cb92-50"><a href="#cb92-50" aria-hidden="true" tabindex="-1"></a>   <span class="fu">with_no_grad</span>({</span>
-<span id="cb92-51"><a href="#cb92-51" aria-hidden="true" tabindex="-1"></a>     w1 <span class="ot">&lt;-</span> w1<span class="sc">$</span><span class="fu">sub_</span>(learning_rate <span class="sc">*</span> w1<span class="sc">$</span>grad)</span>
-<span id="cb92-52"><a href="#cb92-52" aria-hidden="true" tabindex="-1"></a>     w2 <span class="ot">&lt;-</span> w2<span class="sc">$</span><span class="fu">sub_</span>(learning_rate <span class="sc">*</span> w2<span class="sc">$</span>grad)</span>
-<span id="cb92-53"><a href="#cb92-53" aria-hidden="true" tabindex="-1"></a>     b1 <span class="ot">&lt;-</span> b1<span class="sc">$</span><span class="fu">sub_</span>(learning_rate <span class="sc">*</span> b1<span class="sc">$</span>grad)</span>
-<span id="cb92-54"><a href="#cb92-54" aria-hidden="true" tabindex="-1"></a>     b2 <span class="ot">&lt;-</span> b2<span class="sc">$</span><span class="fu">sub_</span>(learning_rate <span class="sc">*</span> b2<span class="sc">$</span>grad)  </span>
-<span id="cb92-55"><a href="#cb92-55" aria-hidden="true" tabindex="-1"></a>     </span>
-<span id="cb92-56"><a href="#cb92-56" aria-hidden="true" tabindex="-1"></a>     <span class="co"># Zero gradients after every pass, as they'd</span></span>
-<span id="cb92-57"><a href="#cb92-57" aria-hidden="true" tabindex="-1"></a>     <span class="co"># accumulate otherwise</span></span>
-<span id="cb92-58"><a href="#cb92-58" aria-hidden="true" tabindex="-1"></a>     w1<span class="sc">$</span>grad<span class="sc">$</span><span class="fu">zero_</span>()</span>
-<span id="cb92-59"><a href="#cb92-59" aria-hidden="true" tabindex="-1"></a>     w2<span class="sc">$</span>grad<span class="sc">$</span><span class="fu">zero_</span>()</span>
-<span id="cb92-60"><a href="#cb92-60" aria-hidden="true" tabindex="-1"></a>     b1<span class="sc">$</span>grad<span class="sc">$</span><span class="fu">zero_</span>()</span>
-<span id="cb92-61"><a href="#cb92-61" aria-hidden="true" tabindex="-1"></a>     b2<span class="sc">$</span>grad<span class="sc">$</span><span class="fu">zero_</span>()  </span>
-<span id="cb92-62"><a href="#cb92-62" aria-hidden="true" tabindex="-1"></a>   })</span>
-<span id="cb92-63"><a href="#cb92-63" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb92-64"><a href="#cb92-64" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb93"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb93-1"><a href="#cb93-1" aria-hidden="true" tabindex="-1"></a><span class="co"># simulate data</span></span>
+<span id="cb93-2"><a href="#cb93-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb93-3"><a href="#cb93-3" aria-hidden="true" tabindex="-1"></a><span class="do">## input dimensionality (number of input features)</span></span>
+<span id="cb93-4"><a href="#cb93-4" aria-hidden="true" tabindex="-1"></a>d_in <span class="ot">&lt;-</span> <span class="dv">3</span></span>
+<span id="cb93-5"><a href="#cb93-5" aria-hidden="true" tabindex="-1"></a><span class="do">## number of observations in training set</span></span>
+<span id="cb93-6"><a href="#cb93-6" aria-hidden="true" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="dv">100</span></span>
+<span id="cb93-7"><a href="#cb93-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb93-8"><a href="#cb93-8" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">torch_randn</span>(n, d_in)</span>
+<span id="cb93-9"><a href="#cb93-9" aria-hidden="true" tabindex="-1"></a>coefs <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">0.2</span>, <span class="sc">-</span><span class="fl">1.3</span>, <span class="sc">-</span><span class="fl">0.5</span>)</span>
+<span id="cb93-10"><a href="#cb93-10" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> x<span class="sc">$</span><span class="fu">matmul</span>(coefs)<span class="sc">$</span><span class="fu">unsqueeze</span>(<span class="dv">2</span>) <span class="sc">+</span> <span class="fu">torch_randn</span>(n, <span class="dv">1</span>)</span>
+<span id="cb93-11"><a href="#cb93-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb93-12"><a href="#cb93-12" aria-hidden="true" tabindex="-1"></a><span class="co"># dimensionality of hidden layer</span></span>
+<span id="cb93-13"><a href="#cb93-13" aria-hidden="true" tabindex="-1"></a>d_hidden <span class="ot">&lt;-</span> <span class="dv">32</span></span>
+<span id="cb93-14"><a href="#cb93-14" aria-hidden="true" tabindex="-1"></a><span class="co"># output dimensionality (number of predicted features)</span></span>
+<span id="cb93-15"><a href="#cb93-15" aria-hidden="true" tabindex="-1"></a>d_out <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb93-16"><a href="#cb93-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb93-17"><a href="#cb93-17" aria-hidden="true" tabindex="-1"></a><span class="co"># weights connecting input to hidden layer</span></span>
+<span id="cb93-18"><a href="#cb93-18" aria-hidden="true" tabindex="-1"></a>w1 <span class="ot">&lt;-</span> <span class="fu">torch_randn</span>(d_in, d_hidden, <span class="at">requires_grad =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb93-19"><a href="#cb93-19" aria-hidden="true" tabindex="-1"></a><span class="co"># weights connecting hidden to output layer</span></span>
+<span id="cb93-20"><a href="#cb93-20" aria-hidden="true" tabindex="-1"></a>w2 <span class="ot">&lt;-</span> <span class="fu">torch_randn</span>(d_hidden, d_out, <span class="at">requires_grad =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb93-21"><a href="#cb93-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb93-22"><a href="#cb93-22" aria-hidden="true" tabindex="-1"></a><span class="co"># hidden layer bias</span></span>
+<span id="cb93-23"><a href="#cb93-23" aria-hidden="true" tabindex="-1"></a>b1 <span class="ot">&lt;-</span> <span class="fu">torch_zeros</span>(<span class="dv">1</span>, d_hidden, <span class="at">requires_grad =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb93-24"><a href="#cb93-24" aria-hidden="true" tabindex="-1"></a><span class="co"># output layer bias</span></span>
+<span id="cb93-25"><a href="#cb93-25" aria-hidden="true" tabindex="-1"></a>b2 <span class="ot">&lt;-</span> <span class="fu">torch_zeros</span>(<span class="dv">1</span>, d_out, <span class="at">requires_grad =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb93-26"><a href="#cb93-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb93-27"><a href="#cb93-27" aria-hidden="true" tabindex="-1"></a>learning_rate <span class="ot">&lt;-</span> <span class="fl">1e-4</span></span>
+<span id="cb93-28"><a href="#cb93-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb93-29"><a href="#cb93-29" aria-hidden="true" tabindex="-1"></a><span class="do">### training loop ----------------------------------------</span></span>
+<span id="cb93-30"><a href="#cb93-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb93-31"><a href="#cb93-31" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (t <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">200</span>) {</span>
+<span id="cb93-32"><a href="#cb93-32" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb93-33"><a href="#cb93-33" aria-hidden="true" tabindex="-1"></a>  <span class="do">### -------- Forward pass --------</span></span>
+<span id="cb93-34"><a href="#cb93-34" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb93-35"><a href="#cb93-35" aria-hidden="true" tabindex="-1"></a>  y_pred <span class="ot">&lt;-</span> x<span class="sc">$</span><span class="fu">mm</span>(w1)<span class="sc">$</span><span class="fu">add</span>(b1)<span class="sc">$</span><span class="fu">relu</span>()<span class="sc">$</span><span class="fu">mm</span>(w2)<span class="sc">$</span><span class="fu">add</span>(b2)</span>
+<span id="cb93-36"><a href="#cb93-36" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb93-37"><a href="#cb93-37" aria-hidden="true" tabindex="-1"></a>  <span class="do">### -------- Compute loss -------- </span></span>
+<span id="cb93-38"><a href="#cb93-38" aria-hidden="true" tabindex="-1"></a>  loss <span class="ot">&lt;-</span> (y_pred <span class="sc">-</span> y)<span class="sc">$</span><span class="fu">pow</span>(<span class="dv">2</span>)<span class="sc">$</span><span class="fu">mean</span>()</span>
+<span id="cb93-39"><a href="#cb93-39" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (t <span class="sc">%%</span> <span class="dv">10</span> <span class="sc">==</span> <span class="dv">0</span>)</span>
+<span id="cb93-40"><a href="#cb93-40" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span>(<span class="st">"Epoch: "</span>, t, <span class="st">"   Loss: "</span>, loss<span class="sc">$</span><span class="fu">item</span>(), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb93-41"><a href="#cb93-41" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb93-42"><a href="#cb93-42" aria-hidden="true" tabindex="-1"></a>  <span class="do">### -------- Backpropagation --------</span></span>
+<span id="cb93-43"><a href="#cb93-43" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb93-44"><a href="#cb93-44" aria-hidden="true" tabindex="-1"></a>  <span class="co"># compute gradient of loss w.r.t. all tensors with</span></span>
+<span id="cb93-45"><a href="#cb93-45" aria-hidden="true" tabindex="-1"></a>  <span class="co"># requires_grad = TRUE</span></span>
+<span id="cb93-46"><a href="#cb93-46" aria-hidden="true" tabindex="-1"></a>  loss<span class="sc">$</span><span class="fu">backward</span>()</span>
+<span id="cb93-47"><a href="#cb93-47" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb93-48"><a href="#cb93-48" aria-hidden="true" tabindex="-1"></a>  <span class="do">### -------- Update weights -------- </span></span>
+<span id="cb93-49"><a href="#cb93-49" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb93-50"><a href="#cb93-50" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Wrap in with_no_grad() because this is a part we don't </span></span>
+<span id="cb93-51"><a href="#cb93-51" aria-hidden="true" tabindex="-1"></a>  <span class="co"># want to record for automatic gradient computation</span></span>
+<span id="cb93-52"><a href="#cb93-52" aria-hidden="true" tabindex="-1"></a>   <span class="fu">with_no_grad</span>({</span>
+<span id="cb93-53"><a href="#cb93-53" aria-hidden="true" tabindex="-1"></a>     w1 <span class="ot">&lt;-</span> w1<span class="sc">$</span><span class="fu">sub_</span>(learning_rate <span class="sc">*</span> w1<span class="sc">$</span>grad)</span>
+<span id="cb93-54"><a href="#cb93-54" aria-hidden="true" tabindex="-1"></a>     w2 <span class="ot">&lt;-</span> w2<span class="sc">$</span><span class="fu">sub_</span>(learning_rate <span class="sc">*</span> w2<span class="sc">$</span>grad)</span>
+<span id="cb93-55"><a href="#cb93-55" aria-hidden="true" tabindex="-1"></a>     b1 <span class="ot">&lt;-</span> b1<span class="sc">$</span><span class="fu">sub_</span>(learning_rate <span class="sc">*</span> b1<span class="sc">$</span>grad)</span>
+<span id="cb93-56"><a href="#cb93-56" aria-hidden="true" tabindex="-1"></a>     b2 <span class="ot">&lt;-</span> b2<span class="sc">$</span><span class="fu">sub_</span>(learning_rate <span class="sc">*</span> b2<span class="sc">$</span>grad)  </span>
+<span id="cb93-57"><a href="#cb93-57" aria-hidden="true" tabindex="-1"></a>     </span>
+<span id="cb93-58"><a href="#cb93-58" aria-hidden="true" tabindex="-1"></a>     <span class="co"># Zero gradients after every pass, as they'd</span></span>
+<span id="cb93-59"><a href="#cb93-59" aria-hidden="true" tabindex="-1"></a>     <span class="co"># accumulate otherwise</span></span>
+<span id="cb93-60"><a href="#cb93-60" aria-hidden="true" tabindex="-1"></a>     w1<span class="sc">$</span>grad<span class="sc">$</span><span class="fu">zero_</span>()</span>
+<span id="cb93-61"><a href="#cb93-61" aria-hidden="true" tabindex="-1"></a>     w2<span class="sc">$</span>grad<span class="sc">$</span><span class="fu">zero_</span>()</span>
+<span id="cb93-62"><a href="#cb93-62" aria-hidden="true" tabindex="-1"></a>     b1<span class="sc">$</span>grad<span class="sc">$</span><span class="fu">zero_</span>()</span>
+<span id="cb93-63"><a href="#cb93-63" aria-hidden="true" tabindex="-1"></a>     b2<span class="sc">$</span>grad<span class="sc">$</span><span class="fu">zero_</span>()  </span>
+<span id="cb93-64"><a href="#cb93-64" aria-hidden="true" tabindex="-1"></a>   })</span>
+<span id="cb93-65"><a href="#cb93-65" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb93-66"><a href="#cb93-66" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Epoch:  10    Loss:  36.53365 
-Epoch:  20    Loss:  32.82933 
-Epoch:  30    Loss:  29.63474 
-Epoch:  40    Loss:  26.89863 
-Epoch:  50    Loss:  24.51958 
-Epoch:  60    Loss:  22.43963 
-Epoch:  70    Loss:  20.61478 
-Epoch:  80    Loss:  19.00954 
-Epoch:  90    Loss:  17.59019 
-Epoch:  100    Loss:  16.33298 
-Epoch:  110    Loss:  15.21571 
-Epoch:  120    Loss:  14.22108 
-Epoch:  130    Loss:  13.33521 
-Epoch:  140    Loss:  12.54481 
-Epoch:  150    Loss:  11.83584 
-Epoch:  160    Loss:  11.19725 
-Epoch:  170    Loss:  10.61986 
-Epoch:  180    Loss:  10.09724 
-Epoch:  190    Loss:  9.623425 
-Epoch:  200    Loss:  9.192407 </code></pre>
+<pre><code>Epoch:  10    Loss:  36.92444 
+Epoch:  20    Loss:  35.07599 
+Epoch:  30    Loss:  33.39123 
+Epoch:  40    Loss:  31.85553 
+Epoch:  50    Loss:  30.44374 
+Epoch:  60    Loss:  29.14046 
+Epoch:  70    Loss:  27.93891 
+Epoch:  80    Loss:  26.82019 
+Epoch:  90    Loss:  25.77293 
+Epoch:  100    Loss:  24.8002 
+Epoch:  110    Loss:  23.89455 
+Epoch:  120    Loss:  23.04999 
+Epoch:  130    Loss:  22.25873 
+Epoch:  140    Loss:  21.51615 
+Epoch:  150    Loss:  20.80995 
+Epoch:  160    Loss:  20.14409 
+Epoch:  170    Loss:  19.51717 
+Epoch:  180    Loss:  18.92429 
+Epoch:  190    Loss:  18.3622 
+Epoch:  200    Loss:  17.82701 </code></pre>
 </div>
 </div>
-</section>
+<p>The <code>torch</code> package allows us to simplify the training of neural networks through the use of <em>modules</em>, <em>loss functions</em>, and <em>optimizers</em>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb95"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb95-1"><a href="#cb95-1" aria-hidden="true" tabindex="-1"></a><span class="co"># input dimensionality (number of input features)</span></span>
+<span id="cb95-2"><a href="#cb95-2" aria-hidden="true" tabindex="-1"></a>d_in <span class="ot">&lt;-</span> <span class="dv">3</span></span>
+<span id="cb95-3"><a href="#cb95-3" aria-hidden="true" tabindex="-1"></a><span class="co"># number of observations in training set</span></span>
+<span id="cb95-4"><a href="#cb95-4" aria-hidden="true" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="dv">100</span></span>
+<span id="cb95-5"><a href="#cb95-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb95-6"><a href="#cb95-6" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">torch_randn</span>(n, d_in)</span>
+<span id="cb95-7"><a href="#cb95-7" aria-hidden="true" tabindex="-1"></a>coefs <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">0.2</span>, <span class="sc">-</span><span class="fl">1.3</span>, <span class="sc">-</span><span class="fl">0.5</span>)</span>
+<span id="cb95-8"><a href="#cb95-8" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> x<span class="sc">$</span><span class="fu">matmul</span>(coefs)<span class="sc">$</span><span class="fu">unsqueeze</span>(<span class="dv">2</span>) <span class="sc">+</span> <span class="fu">torch_randn</span>(n, <span class="dv">1</span>)</span>
+<span id="cb95-9"><a href="#cb95-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb95-10"><a href="#cb95-10" aria-hidden="true" tabindex="-1"></a><span class="co"># dimensionality of hidden layer</span></span>
+<span id="cb95-11"><a href="#cb95-11" aria-hidden="true" tabindex="-1"></a>d_hidden <span class="ot">&lt;-</span> <span class="dv">32</span></span>
+<span id="cb95-12"><a href="#cb95-12" aria-hidden="true" tabindex="-1"></a><span class="co"># output dimensionality (number of predicted features)</span></span>
+<span id="cb95-13"><a href="#cb95-13" aria-hidden="true" tabindex="-1"></a>d_out <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb95-14"><a href="#cb95-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb95-15"><a href="#cb95-15" aria-hidden="true" tabindex="-1"></a>net <span class="ot">&lt;-</span> <span class="fu">nn_sequential</span>(</span>
+<span id="cb95-16"><a href="#cb95-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">nn_linear</span>(d_in, d_hidden),</span>
+<span id="cb95-17"><a href="#cb95-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">nn_relu</span>(),</span>
+<span id="cb95-18"><a href="#cb95-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">nn_linear</span>(d_hidden, d_out)</span>
+<span id="cb95-19"><a href="#cb95-19" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb95-20"><a href="#cb95-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb95-21"><a href="#cb95-21" aria-hidden="true" tabindex="-1"></a>opt <span class="ot">&lt;-</span> <span class="fu">optim_adam</span>(net<span class="sc">$</span>parameters)</span>
+<span id="cb95-22"><a href="#cb95-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb95-23"><a href="#cb95-23" aria-hidden="true" tabindex="-1"></a><span class="do">### training loop --------------------------------------</span></span>
+<span id="cb95-24"><a href="#cb95-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb95-25"><a href="#cb95-25" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (t <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">200</span>) {</span>
+<span id="cb95-26"><a href="#cb95-26" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb95-27"><a href="#cb95-27" aria-hidden="true" tabindex="-1"></a>  <span class="do">### -------- Forward pass --------</span></span>
+<span id="cb95-28"><a href="#cb95-28" aria-hidden="true" tabindex="-1"></a>  y_pred <span class="ot">&lt;-</span> <span class="fu">net</span>(x)</span>
+<span id="cb95-29"><a href="#cb95-29" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb95-30"><a href="#cb95-30" aria-hidden="true" tabindex="-1"></a>  <span class="do">### -------- Compute loss -------- </span></span>
+<span id="cb95-31"><a href="#cb95-31" aria-hidden="true" tabindex="-1"></a>  loss <span class="ot">&lt;-</span> <span class="fu">nnf_mse_loss</span>(y_pred, y)</span>
+<span id="cb95-32"><a href="#cb95-32" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (t <span class="sc">%%</span> <span class="dv">10</span> <span class="sc">==</span> <span class="dv">0</span>)</span>
+<span id="cb95-33"><a href="#cb95-33" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span>(<span class="st">"Epoch: "</span>, t, <span class="st">"   Loss: "</span>, loss<span class="sc">$</span><span class="fu">item</span>(), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb95-34"><a href="#cb95-34" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb95-35"><a href="#cb95-35" aria-hidden="true" tabindex="-1"></a>  <span class="do">### -------- Backpropagation --------</span></span>
+<span id="cb95-36"><a href="#cb95-36" aria-hidden="true" tabindex="-1"></a>  opt<span class="sc">$</span><span class="fu">zero_grad</span>()</span>
+<span id="cb95-37"><a href="#cb95-37" aria-hidden="true" tabindex="-1"></a>  loss<span class="sc">$</span><span class="fu">backward</span>()</span>
+<span id="cb95-38"><a href="#cb95-38" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb95-39"><a href="#cb95-39" aria-hidden="true" tabindex="-1"></a>  <span class="do">### -------- Update weights -------- </span></span>
+<span id="cb95-40"><a href="#cb95-40" aria-hidden="true" tabindex="-1"></a>  opt<span class="sc">$</span><span class="fu">step</span>()</span>
+<span id="cb95-41"><a href="#cb95-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb95-42"><a href="#cb95-42" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Epoch:  10    Loss:  2.730089 
+Epoch:  20    Loss:  2.559406 
+Epoch:  30    Loss:  2.395721 
+Epoch:  40    Loss:  2.238193 
+Epoch:  50    Loss:  2.086209 
+Epoch:  60    Loss:  1.940558 
+Epoch:  70    Loss:  1.802306 
+Epoch:  80    Loss:  1.673619 
+Epoch:  90    Loss:  1.555859 
+Epoch:  100    Loss:  1.450281 
+Epoch:  110    Loss:  1.358387 
+Epoch:  120    Loss:  1.279931 
+Epoch:  130    Loss:  1.214925 
+Epoch:  140    Loss:  1.161862 
+Epoch:  150    Loss:  1.118561 
+Epoch:  160    Loss:  1.083892 
+Epoch:  170    Loss:  1.055814 
+Epoch:  180    Loss:  1.032192 
+Epoch:  190    Loss:  1.011384 
+Epoch:  200    Loss:  0.9933026 </code></pre>
+</div>
+</div>
 </section>
 
 </main>
