@@ -323,9 +323,7 @@ x1$grad
 x2$grad
 ```
 
-     
-
-These are the partial derivatives of `x7` with respect to `x1` and `x2`, respectively. Conforming to our manual calculations above, both amount to 0.8, that is, 0.4 times the tensor values 2 and 2.
+Note that these are the values of $\frac{\partial f}{\partial x_{1}}$ and $\frac{\partial f}{\partial x_{2}}$.    Conforming to our manual calculations above, both amount to 0.8, that is, 0.4 times the tensor values 2 and 2.
 
 How about the accumulation process we said was needed to build up those end-to-end derivatives? Can we "follow" the end-to-end derivative as it's being built up? For example, can we see how the final output depends on `x3`?
 
@@ -374,7 +372,7 @@ x6$grad
 
 There is one remaining thing we might be curious about. We've managed to catch a glimpse of the gradient-accumulation process from the "running gradient" point of view, in a sense; but how about the individual derivatives that need to be taken in order to proceed with accumulation? For example, what `x3$grad` tells us is how the output depends on the intermediate state at `x3`; how do we get from there to `x1`, the actual input node?
 
-It turns out that of that aspect, too, we can get an idea. During the forward pass, `torch` already takes a note on what it will have to do, later, to calculate the individual derivatives. This "recipe" is stored in a tensor's `grad_fn` field. For `x3`, this adds the "missing link" to `x1`:
+It turns out that of that aspect, too, we can get an idea. During the forward pass, `torch` already takes note of what it will have to do, later, to calculate the individual derivatives. This "recipe" is stored in a tensor's `grad_fn` field. For `x3`, this adds the "missing link" to `x1`:
 
 ```{r}
 x3$grad_fn
@@ -400,7 +398,14 @@ As an application of automatic differentiation, let's try to minimize the [Rosen
 
 ![Rosenbrock function.](https://github.com/skeydan/Deep-Learning-and-Scientific-Computing-with-R-torch/blob/main/images/optim-1-rosenbrock.png?raw=true){#fig-optim-1-rosenbrock fig-alt="Contour plot of a function in two variables, where the small function values lie inside a stretched-out, narrow valley."}
 
-Here is the function definition. `a` and `b` are parameters that can be freely chosen; the values we use here are a frequent choice.
+Here is the function definition: 
+
+$$
+f(x_{1},x_{2}) = (a - x_{1})^{2} + b(x_{2} - x_{1}^{2})^{2}
+$$
+where $a$ and $b$ are parameters. 
+
+The function is implemented in R as follows:
 
 ```{r}
 a <- 1
@@ -412,6 +417,8 @@ rosenbrock <- function(x) {
   (a - x1)^2 + b * (x2 - x1^2)^2
 }
 ```
+
+`a` and `b` are parameters that can be freely chosen; the values we use here are a frequent choice.
 
 Here is the gradient descent implementation:
 
@@ -446,7 +453,7 @@ for (i in 1:num_iterations) {
 x
 ```
 
-
+Let's apply what we have learned about `torch` so far to buil da simple neural network model for some simulated data.
 
 ## A Neural network from scratch
 
@@ -534,7 +541,15 @@ for (t in 1:200) {
 
 ```
 
-The `torch` package allows us to simplify the training of neural networks through the use of *modules*, *loss functions*, and *optimizers*. 
+The `torch` package allows us to simplify the training of neural networks through the use of 
+
+* *modules* that describe the components of the network architecture, 
+
+* built-in *loss functions*, and 
+
+* *optimizers*. 
+
+Here's an example in code:
 
 ```{r}
 # input dimensionality (number of input features)
@@ -557,7 +572,8 @@ net <- nn_sequential(
   nn_linear(d_hidden, d_out)
 )
 
-opt <- optim_adam(net$parameters)
+#opt <- optim_adam(net$parameters)
+opt <- optim_sgd(net$parameters, lr = 1e-4)
 
 ### training loop --------------------------------------
 
@@ -584,7 +600,7 @@ for (t in 1:200) {
 ```
 
 
-
+Each of the functions `nn_linear` and `nn_relu` is an example of a *module*. The function `nnf_mse_loss` is the `torch` implementation of the mean squared error loss function. The function `optim_sgd` is the `torch` implementation of stochastic gradient descent.
 
 
 
